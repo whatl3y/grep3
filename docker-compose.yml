@@ -1,7 +1,13 @@
-version: "3"
 services:
+  docker:
+    image: "docker:latest"
+    privileged: true
+    ports:
+      - "2475:2375"
+    environment:
+      - DOCKER_TLS_CERTDIR=
   redis:
-    image: "redis"
+    image: "redis:latest"
   postgres:
     image: "postgres:16"
     ports:
@@ -24,6 +30,37 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgres://postgres:web3-compute@postgres:5432/web3-compute
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://web:8000
       - PORT=8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./dist:/usr/web3-compute/dist
+  workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:web3-compute@postgres:5432/web3-compute
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://web:8000
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./dist:/usr/web3-compute/dist
+  scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./dist:/usr/web3-compute/dist

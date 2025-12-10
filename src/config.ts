@@ -8,7 +8,7 @@ export default {
   },
 
   server: {
-    host: process.env.HOSTNAME || "http://localhost:8080",
+    host: process.env.HOST || "http://localhost:8000",
     port: process.env.PORT || 8000,
   },
 
@@ -22,5 +22,13 @@ export default {
 
   postgres: {
     url: process.env.DATABASE_URL,
+  },
+
+  resque: {
+    default: process.env.RESQUE_QUEUE || "web3-compute_resque_default",
+
+    getAllQueues() {
+      return [this.default];
+    },
   },
 };

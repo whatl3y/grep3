@@ -7,7 +7,8 @@ import {
 } from "kysely";
 
 export interface Database {
-  repo: RepoTable;
+  repos: RepoTable;
+  executions: ExecutionTable;
 }
 
 export interface RepoTable {
@@ -16,6 +17,15 @@ export interface RepoTable {
   internal_name: string;
   name: string;
   created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export interface ExecutionTable {
+  id: Generated<number>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  repo_id: number;
+  image_hash: string | null;
+  container_hash: string | null;
+  output: string | null;
 }
 
 // You should not use the table schema interfaces directly. Instead, you should
@@ -27,3 +37,7 @@ export interface RepoTable {
 export type Repo = Selectable<RepoTable>;
 export type NewRepo = Insertable<RepoTable>;
 export type RepoUpdate = Updateable<RepoTable>;
+
+export type Execution = Selectable<ExecutionTable>;
+export type NewExecution = Insertable<ExecutionTable>;
+export type ExecutionUpdate = Updateable<ExecutionTable>;

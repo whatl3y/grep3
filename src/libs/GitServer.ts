@@ -1,5 +1,5 @@
 import bunyan from "bunyan";
-import fs from "fs";
+import { createReadStream } from "fs";
 import path from "path";
 import { c as tarCreate, x as tarExtract } from "tar";
 import { Git, FetchData, PushData } from "node-git-server";
@@ -13,12 +13,17 @@ import { IFactoryOptions } from "../factory";
 
 const aws = Aws();
 
+export interface IGitServer {
+  rootDir: string;
+  create(address: string): Promise<Git>;
+}
+
 export const defaultRootDir = path.join(__dirname, "..", "..", "tmp", "git");
 
 export default function GitServer(
-  { log, redis }: IFactoryOptions,
+  { log }: IFactoryOptions,
   rootDir: string = defaultRootDir
-) {
+): IGitServer {
   return {
     rootDir,
 
@@ -47,12 +52,16 @@ export default function GitServer(
             log.debug(
               `push success ${push.repo}:${push.branch}:${push.commit}`
             );
-            const { fullFilePath } = await tarRepo(rootDir, address, push.repo);
+            const { name: tarballName, fullFilePath } = await tarRepo(
+              rootDir,
+              address,
+              push.repo
+            );
 
             // send tarball repo to AWS
             const { filename: internalFilename } = await aws.writeFile({
-              filename: push.repo,
-              data: fs.createReadStream(fullFilePath),
+              filename: `${address}/${tarballName}`,
+              data: createReadStream(fullFilePath),
             });
             const existingRepo = await findRepoByAddressAndName(
               address,
@@ -108,7 +117,7 @@ export default function GitServer(
     repoName: string
   ): Promise<{ dir: string; name: string; fullFilePath: string }> {
     repoName = repoName.replace(/\.git$/, "");
-    const repoTarFilename = `${repoName}.git.tar.gz`;
+    const repoTarFilename = `${repoName}.git.tgz`;
     const filePath = path.join(rootDir, address);
     const fullRepoTarPath = path.join(filePath, repoTarFilename);
 
@@ -153,6 +162,6 @@ export async function untarRepoFromAws(
     }),
     { filename: repo.internal_name }
   );
-  log.debug(`successfully extracted tarball from AWS`, address, repoName);
+  log.debug(`successfully extracted tarball from AWS`, repo.internal_name);
   return true;
 }

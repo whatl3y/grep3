@@ -1,5 +1,5 @@
 import Docker from "dockerode";
-import { Readable } from "stream";
+import { Readable, Writable, WritableOptions } from "stream";
 import config from "../config";
 
 const docker = new Docker({ host: config.docker.host });
@@ -21,4 +21,27 @@ export async function streamToBuffer(str: Readable): Promise<Buffer> {
       .on("data", (chunk) => data.push(chunk))
       .on("end", () => resolve(Buffer.concat(data)));
   });
+}
+
+export class InMemoryWritableStream extends Writable {
+  private chunks: Buffer[];
+
+  constructor(options?: WritableOptions) {
+    super(options);
+    this.chunks = [];
+  }
+
+  _write(
+    chunk: any,
+    encoding: BufferEncoding,
+    callback: (error?: Error | null) => void
+  ): void {
+    // Store the chunk in the array
+    this.chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    callback();
+  }
+
+  getData(): Buffer {
+    return Buffer.concat(this.chunks);
+  }
 }

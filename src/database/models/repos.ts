@@ -3,7 +3,7 @@ import { RepoUpdate, Repo, NewRepo } from "../types";
 
 export async function findRepoById(id: number) {
   return await db
-    .selectFrom("repo")
+    .selectFrom("repos")
     .where("id", "=", id)
     .selectAll()
     .executeTakeFirst();
@@ -11,7 +11,7 @@ export async function findRepoById(id: number) {
 
 export async function findRepoByAddressAndName(address: string, name: string) {
   return await db
-    .selectFrom("repo")
+    .selectFrom("repos")
     .where("address", "=", address)
     .where("name", "=", name)
     .selectAll()
@@ -20,17 +20,21 @@ export async function findRepoByAddressAndName(address: string, name: string) {
 
 export async function findRepoByInternalName(internalName: string) {
   return await db
-    .selectFrom("repo")
+    .selectFrom("repos")
     .where("internal_name", "=", internalName)
     .selectAll()
     .executeTakeFirst();
 }
 
 export async function findRepos(criteria: Partial<Repo>) {
-  let query = db.selectFrom("repo");
+  let query = db.selectFrom("repos");
 
   if (criteria.id) {
-    query = query.where("id", "=", criteria.id); // Kysely is immutable, you must re-assign!
+    query = query.where("id", "=", criteria.id);
+  }
+
+  if (criteria.address) {
+    query = query.where("address", "=", criteria.address);
   }
 
   if (criteria.name) {
@@ -45,20 +49,20 @@ export async function findRepos(criteria: Partial<Repo>) {
 }
 
 export async function updateRepo(id: number, updateWith: RepoUpdate) {
-  await db.updateTable("repo").set(updateWith).where("id", "=", id).execute();
+  await db.updateTable("repos").set(updateWith).where("id", "=", id).execute();
 }
 
-export async function createRepo(repo: NewRepo) {
+export async function createRepo(repos: NewRepo) {
   return await db
-    .insertInto("repo")
-    .values(repo)
+    .insertInto("repos")
+    .values(repos)
     .returningAll()
     .executeTakeFirstOrThrow();
 }
 
 export async function deleteRepo(id: number) {
   return await db
-    .deleteFrom("repo")
+    .deleteFrom("repos")
     .where("id", "=", id)
     .returningAll()
     .executeTakeFirst();

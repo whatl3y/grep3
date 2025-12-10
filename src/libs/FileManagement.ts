@@ -1,6 +1,6 @@
 import path from "path";
 import { createReadStream } from "fs";
-import { stat, writeFile, mkdir, readFile, readdir } from "fs/promises";
+import { access, writeFile, mkdir, readFile, readdir } from "fs/promises";
 
 export default function FileManagement() {
   return {
@@ -44,34 +44,41 @@ export default function FileManagement() {
     },
 
     async doesDirectoryExist(filePath: string): Promise<boolean> {
-      return this.doesDirOrFileExist(filePath, "isDirectory");
+      return await this.doesDirOrFileExist(filePath);
     },
 
     async doesFileExist(filePath: string): Promise<boolean> {
-      return this.doesDirOrFileExist(filePath, "isFile");
+      return await this.doesDirOrFileExist(filePath);
     },
 
-    async doesDirOrFileExist(
-      filePath: string,
-      method: "isDirectory" | "isFile"
-    ): Promise<boolean> {
+    async doesDirOrFileExist(filePath: string): Promise<boolean> {
       try {
-        const stats = await stat(filePath);
-        return stats[method]();
-      } catch (e) {
-        return false;
+        await access(filePath);
+        return true;
+      } catch (e: any) {
+        if (e.code === "ENOENT") {
+          return false;
+        } else {
+          throw e;
+        }
       }
     },
 
     createNewFileName(
-      fileName: string,
+      filePath: string,
       extraText: number | string = Date.now()
     ): string {
-      fileName = encodeURIComponent(fileName);
-      return `${fileName
+      const pathSplit = filePath.split("/");
+      const encodedFileName = encodeURIComponent(
+        pathSplit[pathSplit.length - 1]
+      );
+      const finalFilename = `${encodedFileName
         .split(".")
         .slice(0, -1)
-        .join(".")}_${extraText}${path.extname(fileName)}`;
+        .join(".")}_${extraText}${path.extname(encodedFileName)}`;
+      return `${pathSplit
+        .slice(0, pathSplit.length - 1)
+        .join("/")}/${finalFilename}`;
     },
   };
 }
