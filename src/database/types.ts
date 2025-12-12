@@ -25,7 +25,7 @@ export interface ExecutionTable {
   repo_id: number;
   image_hash: string | null;
   container_hash: string | null;
-  output: string | null;
+  stdout_file: string | null;
 }
 
 // You should not use the table schema interfaces directly. Instead, you should

@@ -7,9 +7,9 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("repo_id", "integer", (col) =>
       col.references("repos.id").onDelete("cascade").notNull()
     )
-    .addColumn("image_hash", "varchar(255)", (col) => col.unique())
-    .addColumn("container_hash", "varchar(255)", (col) => col.unique())
-    .addColumn("output", "text")
+    .addColumn("image_hash", "varchar(255)")
+    .addColumn("container_hash", "varchar(255)")
+    .addColumn("stdout_file", "varchar(255)")
     .addColumn("created_at", "timestamp", (col) =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()
     )

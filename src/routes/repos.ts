@@ -10,7 +10,7 @@ import BackgroundWorker from "../libs/BackgroundWorker";
 
 export const repos: IRoute = {
   method: "get",
-  path: "/repos/:address",
+  path: "/repos/:address/all",
   async handler(req: Request, res: Response) {
     try {
       const address = req.params.address;
@@ -26,13 +26,32 @@ export const repos: IRoute = {
   },
 };
 
-export const repoExecute: IRoute = {
-  method: "all",
-  path: "/repos/execute/:id",
+export const repoGet: IRoute = {
+  method: "get",
+  path: "/repos/:id/get",
   async handler(req: Request, res: Response) {
     try {
-      const id = req.params.id;
-      if (isNaN(Number(id))) {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).send(`invalid id: ${id}`);
+      }
+
+      const repo = await findRepoById(id);
+      log.debug(`repo found`, repo);
+      res.json({ repo });
+    } catch (err: any) {
+      res.status(err.statusCode || 500).send(err.stack);
+    }
+  },
+};
+
+export const repoExecute: IRoute = {
+  method: "all",
+  path: "/repos/:id/execute",
+  async handler(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
         return res.status(400).send(`invalid id: ${id}`);
       }
 

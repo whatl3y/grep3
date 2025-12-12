@@ -12,6 +12,7 @@ import config from "./config";
 import log from "./logger";
 import bindRoutes from "./routes";
 import { IFactoryOptions } from "./factory";
+import Markdown from "./libs/Markdown";
 
 dotenv.config({ quiet: true });
 
@@ -102,6 +103,19 @@ dotenv.config({ quiet: true });
     });
 
     bindRoutes(app);
+
+    // present README on home page
+    app.get("/", async (_, res) => {
+      try {
+        res.send(
+          await Markdown.convertFileToHtml(
+            path.join(__dirname, "..", "README.md")
+          )
+        );
+      } catch (err: any) {
+        res.status(505).send(err.stack);
+      }
+    });
 
     app.listen(config.server.port, () =>
       log.info(`listening on *:${config.server.port}`)
