@@ -1,52 +1,10 @@
 {
-  "name": "web3-compute",
-  "version": "0.0.1",
-  "description": "Execute any code you want that can be built into a docker container: Powered by x402, web3, git, and docker",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/moontography/web3-compute"
-  },
+  "name": "grep3",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "build": "tsc",
-    "resque:retry": "node dist/tasks/resque/retryFailedJobs",
-    "resque:worker": "node dist/resqueWorker",
-    "resque:scheduler": "node dist/resqueScheduler",
-    "start": "node dist/tasks/migrate.js && node dist/webServer.js",
-    "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
-  },
-  "author": "Lance Whatley <lance@moontography.com>",
-  "license": "MIT",
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.947.0",
-    "bunyan": "^1.8.15",
-    "dockerode": "^4.0.9",
-    "dotenv": "^17.2.3",
-    "ethers": "^6.15.0",
-    "express": "^5.2.1",
-    "highlight.js": "^11.11.1",
-    "ioredis": "^5.8.2",
-    "kysely": "^0.28.8",
-    "markdown-it": "^14.1.0",
-    "minimist": "^1.2.8",
-    "node-git-server": "^1.0.0",
-    "node-resque": "^9.3.8",
-    "pg": "^8.16.3",
-    "simple-git": "^3.30.0",
-    "tar": "^7.5.2",
-    "tar-fs": "^3.1.1"
-  },
-  "devDependencies": {
-    "@types/bunyan": "^1.8.11",
-    "@types/dockerode": "^3.3.47",
-    "@types/express": "^5.0.6",
-    "@types/markdown-it": "^14.1.2",
-    "@types/minimist": "^1.2.5",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^24.10.1",
-    "@types/pg": "^8.15.6",
-    "@types/tar-fs": "^2.0.4",
-    "mocha": "^11.7.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
   }
 }

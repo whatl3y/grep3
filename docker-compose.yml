@@ -1,4 +1,5 @@
 services:
+  # Shared infrastructure services
   docker:
     image: "docker:latest"
     privileged: true
@@ -6,61 +7,99 @@ services:
       - "2475:2375"
     environment:
       - DOCKER_TLS_CERTDIR=
+
   redis:
     image: "redis:latest"
+    ports:
+      - "6379:6379"
+
   postgres:
     image: "postgres:16"
     ports:
       - "5433:5432"
     environment:
-      - POSTGRES_DB=web3-compute
+      - POSTGRES_DB=grep3
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=web3-compute
-  web:
+      - POSTGRES_PASSWORD=grep3
+
+  # Engine app services
+  engine-web:
     restart: always
     build:
-      context: .
+      context: ./apps/engine
       dockerfile: Dockerfile
     depends_on:
-      - "postgres"
-      - "redis"
+      - postgres
+      - redis
+      - docker
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./apps/engine/.env
     environment:
-      - DATABASE_URL=postgres://postgres:web3-compute@postgres:5432/web3-compute
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://web:8000
+      - HOST=http://engine-web:8000
       - PORT=8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./dist:/usr/web3-compute/dist
-  workers:
+      - ./apps/engine/dist:/usr/grep3/dist
+
+  engine-workers:
     restart: always
     build:
-      context: .
+      context: ./apps/engine
       dockerfile: Dockerfile.worker
+    depends_on:
+      - postgres
+      - redis
+      - docker
     env_file:
-      - .env
+      - ./apps/engine/.env
     environment:
-      - DATABASE_URL=postgres://postgres:web3-compute@postgres:5432/web3-compute
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://web:8000
+      - HOST=http://engine-web:8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./dist:/usr/web3-compute/dist
-  scheduler:
+      - ./apps/engine/dist:/usr/grep3/dist
+
+  engine-scheduler:
     restart: always
     build:
-      context: .
+      context: ./apps/engine
       dockerfile: Dockerfile.scheduler
+    depends_on:
+      - redis
     env_file:
-      - .env
+      - ./apps/engine/.env
     environment:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=redis:6379
     volumes:
-      - ./dist:/usr/web3-compute/dist
+      - ./apps/engine/dist:/usr/grep3/dist
+
+  # Web app services
+  web-app:
+    restart: always
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./apps/web/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://web-app:8080
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/web/dist:/usr/grep3/dist

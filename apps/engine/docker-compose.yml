@@ -1,0 +1,66 @@
+services:
+  docker:
+    image: "docker:latest"
+    privileged: true
+    ports:
+      - "2475:2375"
+    environment:
+      - DOCKER_TLS_CERTDIR=
+  redis:
+    image: "redis:latest"
+  postgres:
+    image: "postgres:16"
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=grep3
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=grep3
+  web:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - "postgres"
+      - "redis"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://web:8000
+      - PORT=8000
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./dist:/usr/grep3/dist
+  workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://web:8000
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./dist:/usr/grep3/dist
+  scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./dist:/usr/grep3/dist
