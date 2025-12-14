@@ -1,4 +1,4 @@
-import { MultiWorker, Scheduler, ConnectionOptions, Jobs } from "@grep3/core";
+import { MultiWorker, Scheduler, ConnectionOptions, Jobs } from "node-resque";
 import log from "./logger";
 
 export default function startResqueServer({

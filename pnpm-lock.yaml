@@ -13,18 +13,39 @@ importers:
       '@grep3/core':
         specifier: workspace:*
         version: link:../../packages/core
+      bunyan:
+        specifier: ^1.8.15
+        version: 1.8.15
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
       ethers:
         specifier: ^6.16.0
         version: 6.16.0
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.8.2
       kysely:
         specifier: ^0.28.8
         version: 0.28.9
-      simple-git:
-        specifier: ^3.30.0
-        version: 3.30.0
+      minimist:
+        specifier: ^1.2.8
+        version: 1.2.8
+      node-git-server:
+        specifier: ^1.0.0
+        version: 1.0.0
+      node-resque:
+        specifier: ^9.3.8
+        version: 9.3.8
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
+      tar-fs:
+        specifier: ^3.1.1
+        version: 3.1.1
     devDependencies:
       '@types/bunyan':
         specifier: ^1.8.11
@@ -68,9 +89,21 @@ importers:
       '@grep3/core':
         specifier: workspace:*
         version: link:../../packages/core
+      bunyan:
+        specifier: ^1.8.15
+        version: 1.8.15
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
+      ethers:
+        specifier: ^6.16.0
+        version: 6.16.0
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.8.2
     devDependencies:
       '@types/bunyan':
         specifier: ^1.8.11
@@ -147,6 +180,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
+      simple-git:
+        specifier: ^3.30.0
+        version: 3.30.0
       tar:
         specifier: ^7.5.2
         version: 7.5.2

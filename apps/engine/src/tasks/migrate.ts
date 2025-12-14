@@ -1,6 +1,6 @@
-import * as path from "path";
+import path from "path";
+import fs from "fs/promises";
 import { Pool } from "pg";
-import { promises as fs } from "fs";
 import {
   Kysely,
   Migrator,

@@ -1,16 +1,3 @@
-import IORedis from "ioredis";
-import {
-  Queue,
-  MultiWorker,
-  Scheduler,
-  ConnectionOptions,
-  Jobs,
-} from "node-resque";
-
-// Imports
-export { Queue, MultiWorker, Scheduler, ConnectionOptions, Jobs };
-export { IORedis };
-
 // Configuration
 export { default as config } from "./config";
 
@@ -36,9 +23,9 @@ export {
 } from "./libs/Docker";
 export { default as Encryption } from "./libs/Encryption";
 export { default as FileManagement } from "./libs/FileManagement";
+export { default as GitClient } from "./libs/GitClient";
 export {
   default as GitServer,
-  Git,
   untarRepoFromAws,
   defaultRootDir,
 } from "./libs/GitServer";

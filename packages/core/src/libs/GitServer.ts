@@ -18,8 +18,6 @@ export interface IGitServer {
   create(address: string): Promise<Git>;
 }
 
-export { Git };
-
 export const defaultRootDir = path.join(__dirname, "..", "..", "tmp", "git");
 
 export default function GitServer(

@@ -1,6 +1,6 @@
 import assert from "assert";
 import minimist from "minimist";
-import { Queue } from "@grep3/core";
+import { Queue } from "node-resque";
 import redis from "../../redis";
 import config from "../../config";
 

@@ -8,14 +8,18 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/tasks/migrate.js && node dist/webServer.js",
+    "start": "node dist/webServer.js",
     "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
   },
   "author": "Lance Whatley <lance@moontography.com>",
   "license": "MIT",
   "dependencies": {
     "@grep3/core": "workspace:*",
-    "dotenv": "^17.2.3"
+    "bunyan": "^1.8.15",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1",
+    "ioredis": "^5.8.2"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.11",

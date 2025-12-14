@@ -26,8 +26,8 @@ services:
   engine-web:
     restart: always
     build:
-      context: ./apps/engine
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/engine/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -44,13 +44,13 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/dist
+      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
 
   engine-workers:
     restart: always
     build:
-      context: ./apps/engine
-      dockerfile: Dockerfile.worker
+      context: .
+      dockerfile: ./apps/engine/Dockerfile.worker
     depends_on:
       - postgres
       - redis
@@ -64,13 +64,13 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/dist
+      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
 
   engine-scheduler:
     restart: always
     build:
-      context: ./apps/engine
-      dockerfile: Dockerfile.scheduler
+      context: .
+      dockerfile: ./apps/engine/Dockerfile.scheduler
     depends_on:
       - redis
     env_file:
@@ -79,14 +79,14 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/dist
+      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
 
   # Web app services
   web-app:
     restart: always
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/web/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -102,4 +102,4 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/web/dist:/usr/grep3/dist
+      - ./apps/web/dist:/usr/grep3/apps/web/dist

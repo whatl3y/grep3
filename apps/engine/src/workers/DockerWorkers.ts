@@ -7,13 +7,13 @@ import {
   Repo,
   Aws,
   FileManagement,
+  GitClient,
   docker,
   streamToBuffer,
   untarRepoFromAws,
   updateExecution,
   IFactoryOptions,
 } from "@grep3/core";
-import GitClient from "../libs/GitClient";
 // import config from '../config'
 
 const aws = Aws();

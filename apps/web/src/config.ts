@@ -1,8 +1,8 @@
-import coreConfig from "@grep3/core/src/config";
+import { config } from "@grep3/core";
 
 // Web app extends core config with any web-specific overrides
 export default {
-  ...coreConfig,
+  ...config,
 
   appName: "@grep/web",
 

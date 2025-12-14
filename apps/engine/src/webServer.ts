@@ -3,7 +3,7 @@ import express from "express";
 import path from "path";
 import { getAddress, isAddress } from "ethers";
 import { mkdir } from "fs/promises";
-import { Git } from "@grep3/core";
+import { Git } from "node-git-server";
 import {
   GitServer,
   untarRepoFromAws,
@@ -16,7 +16,6 @@ import {
 import redis from "./redis";
 import config from "./config";
 import log from "./logger";
-import bindRoutes from "./routes";
 
 dotenv.config({ quiet: true });
 
@@ -105,8 +104,6 @@ dotenv.config({ quiet: true });
         res.status(500).send(err.message);
       }
     });
-
-    bindRoutes(app);
 
     // present README on home page
     app.get("/", async (_, res) => {

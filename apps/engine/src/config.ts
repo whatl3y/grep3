@@ -1,8 +1,8 @@
-import coreConfig from "@grep3/core/src/config";
+import { config } from "@grep3/core";
 
 // Engine app extends core config with any engine-specific overrides
 export default {
-  ...coreConfig,
+  ...config,
 
   appName: "@grep/engine",
 
