@@ -1,20 +1,16 @@
 import path from "path";
-import { createWriteStream } from "fs";
 import { mkdir } from "fs/promises";
-import { Readable } from "stream";
-import { pack } from "tar-fs";
 import {
   Repo,
   Aws,
   FileManagement,
-  GitClient,
-  docker,
+  getExecutor,
   streamToBuffer,
   untarRepoFromAws,
   updateExecution,
   IFactoryOptions,
 } from "@grep3/core";
-// import config from '../config'
+// import config from "../config";
 
 const aws = Aws();
 const fileMgmt = FileManagement();
@@ -39,8 +35,8 @@ export default function DockerWorkers({ log, db, redis }: IFactoryOptions) {
         executionId: number;
         repo: Repo;
       }) => {
-        let imgHash: string | undefined;
-        let containerHash: string | undefined;
+        // let imgHash: string | undefined;
+        // let containerHash: string | undefined;
 
         try {
           // create directory path to address namespace if needed
@@ -74,76 +70,14 @@ export default function DockerWorkers({ log, db, redis }: IFactoryOptions) {
           }
           log.debug("successfully added git repo", repo?.address, repo?.name);
 
-          const repoExecutionFilePath = path.join(
+          const outputStream = await getExecutor({ log, db, redis }).run(
             addressExecutionFilepath,
-            repo?.name.replace(/\.git$/, "")
+            repo?.address,
+            repo?.name
           );
-          const repoExecutionTarball = path.join(
-            addressExecutionFilepath,
-            `${repo?.name}.tgz`
-          );
-          if (!(await fileMgmt.doesDirOrFileExist(repoExecutionFilePath))) {
-            await mkdir(repoExecutionFilePath, { recursive: true });
-            const gitClient = GitClient(
-              repo?.address,
-              repo?.name,
-              repoExecutionFilePath
-            );
-            await gitClient.pullRepo();
-            log.debug(`successfully pulled to repo`, repoExecutionFilePath);
-            const repoTarStream = createWriteStream(repoExecutionTarball);
-            pack(repoExecutionFilePath).pipe(repoTarStream);
-
-            await new Promise((resolve, reject) => {
-              repoTarStream.on("finish", () => resolve(null));
-              repoTarStream.on("error", (err) => reject(err));
-            });
-            log.debug(
-              `successfully created repo tarball for docker`,
-              repoExecutionTarball
-            );
-          }
-
-          const buildStream = await docker.buildImage(repoExecutionTarball);
-          const image: any = await new Promise((resolve, reject) => {
-            docker.modem.followProgress(
-              buildStream,
-              (err: null | Error, res: any[]) =>
-                err ? reject(err) : resolve(res)
-            );
-          });
-
-          imgHash = image.find((p: any) => Object.keys(p)[0] === "aux").aux.ID;
-          log.debug(`successfully created image`, imgHash);
-
-          const container = await docker.createContainer({
-            Image: imgHash,
-            AttachStdin: false,
-            AttachStdout: true,
-            AttachStderr: true,
-            Tty: true,
-            Env: [], // TODO
-            OpenStdin: false,
-            StdinOnce: false,
-          });
-          containerHash = container.id;
-          log.debug(`successfully created container`, containerHash);
-
-          await container.start();
-          const containerStream: unknown = await container.attach({
-            stream: true,
-            stdout: true,
-            stderr: true,
-          });
-
-          // wait for container to finish and collect output
-          await container.wait();
-          log.debug(`container finished executing`, containerHash);
 
           // convert stream to buffer before uploading to S3
-          const outputBuffer = await streamToBuffer(
-            containerStream as Readable
-          );
+          const outputBuffer = await streamToBuffer(outputStream);
           log.debug(
             `successfully collected container output (${outputBuffer.length} bytes)`
           );
@@ -160,13 +94,10 @@ export default function DockerWorkers({ log, db, redis }: IFactoryOptions) {
           );
 
           await updateExecution(executionId, {
-            image_hash: imgHash,
-            container_hash: containerHash,
             stdout_file: outputFilePath,
           });
           log.debug(
             `successfully finished executing and updating DB`,
-            containerHash,
             outputFilePath
           );
         } catch (err: any) {
@@ -189,12 +120,6 @@ export default function DockerWorkers({ log, db, redis }: IFactoryOptions) {
           const updateData: any = {
             stdout_file: errorFilePath,
           };
-          if (imgHash) {
-            updateData.image_hash = imgHash;
-          }
-          if (containerHash) {
-            updateData.container_hash = containerHash;
-          }
 
           await updateExecution(executionId, updateData);
           log.debug(

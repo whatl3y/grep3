@@ -1,15 +1,21 @@
 import { Request, Response } from "express";
-import { findRepos, findExecutionsByRepoId, Aws } from "@grep3/core";
+import {
+  findExecutionsByRepoId,
+  Aws,
+  findRepoByAddressAndName,
+} from "@grep3/core";
 import { IRoute } from "./index";
 import log from "../logger";
+import { getAddress } from "ethers";
 
 const aws = Aws();
 
 export const repos: IRoute = {
   method: "get",
-  path: "/:repoName",
+  path: "/:address/:repoName",
   async handler(req: Request, res: Response) {
     try {
+      const address = getAddress(req.params.address);
       let repoName = req.params.repoName;
 
       // Handle .git suffix - add it if not present
@@ -18,12 +24,11 @@ export const repos: IRoute = {
       }
 
       // Find the repo by name
-      const repos = await findRepos({ name: repoName });
-      if (!repos || repos.length === 0) {
+      const repo = await findRepoByAddressAndName(address, repoName);
+      if (!repo) {
         return res.status(404).send(`repository not found: ${repoName}`);
       }
 
-      const repo = repos[0];
       log.debug(`Found repo:`, repo);
 
       // Find executions for this repo

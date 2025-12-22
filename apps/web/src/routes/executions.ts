@@ -22,6 +22,7 @@ export const executions: IRoute = {
     }
 
     const repo = await findRepoById(repoId);
+    assert(repo, "no repo by ID");
     assert(repo?.address, "no address for repo");
     assert(repo?.name, "no name for repo");
 

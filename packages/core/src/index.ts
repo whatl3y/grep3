@@ -31,3 +31,6 @@ export {
 } from "./libs/GitServer";
 export { default as Markdown } from "./libs/Markdown";
 export * from "./libs/Utils";
+
+// Executors
+export { getExecutor } from "./executors";

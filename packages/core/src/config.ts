@@ -9,6 +9,12 @@ export default {
     host: process.env.DOCKER_HOST || "http://localhost:2375",
   },
 
+  fly: {
+    flyApiToken: process.env.FLY_API_TOKEN,
+    flyRegistryToken: process.env.FLY_REGISTRY_TOKEN,
+    flyAppName: process.env.FLY_APP_NAME || "grep3",
+  },
+
   logger: {
     level: process.env.LOG_LEVEL || "info",
   },
