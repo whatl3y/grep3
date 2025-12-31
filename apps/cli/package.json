@@ -1,0 +1,56 @@
+{
+  "name": "grep3",
+  "version": "0.0.1",
+  "description": "CLI for interacting with grep3 APIs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grep3/grep3",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://github.com/grep3/grep3#readme",
+  "bugs": {
+    "url": "https://github.com/grep3/grep3/issues"
+  },
+  "keywords": [
+    "grep3",
+    "cli",
+    "merkletree",
+    "tornado",
+    "crypto"
+  ],
+  "bin": {
+    "grep3": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "npm run build && npm link",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "author": "Lance Whatley <lance@moontography.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

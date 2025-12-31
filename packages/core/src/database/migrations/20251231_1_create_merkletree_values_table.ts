@@ -3,6 +3,7 @@ import { Kysely, sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("merkletree_values")
+    .ifNotExists()
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("merkletree_id", "integer", (col) =>
       col.references("merkletrees.id").onDelete("cascade").notNull()
@@ -18,6 +19,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   // Create unique constraint on merkletree_id + unique_id
   await db.schema
     .createIndex("merkletree_values_unique_idx")
+    .ifNotExists()
     .on("merkletree_values")
     .columns(["merkletree_id", "unique_id"])
     .unique()

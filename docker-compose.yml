@@ -105,8 +105,8 @@ services:
   tornado-api:
     restart: always
     build:
-      context: ./apps/tornado-api
-      dockerfile: ./Dockerfile
+      context: .
+      dockerfile: ./apps/tornado-api/Dockerfile
     depends_on:
       - redis
     ports:
@@ -119,7 +119,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=redis:6379
     volumes:
-      - ./apps/tornado-api/dist:/usr/tornado-api/dist
+      - ./apps/tornado-api/dist:/usr/grep3/apps/tornado-api/dist
 
   merkletree-api-web:
     restart: always

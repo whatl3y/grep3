@@ -5,7 +5,7 @@ import config from "./config";
 // const createCWStream = require('bunyan-cloudwatch')
 
 const loggerOptions: LoggerOptions = <LoggerOptions>{
-  name: config.app.name,
+  name: config.appName,
   level: process.env.LOG_LEVEL || "info",
   streams: [
     {

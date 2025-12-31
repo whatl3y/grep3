@@ -11,7 +11,7 @@
     "resque:retry": "node dist/tasks/resque/retryFailedJobs",
     "resque:worker": "node dist/resqueWorker",
     "resque:scheduler": "node dist/resqueScheduler",
-    "start": "node dist/tasks/migrate.js && node dist/webServer.js",
+    "start": "node dist/webServer.js",
     "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
   },
   "author": "Lance Whatley <lance@moontography.com>",

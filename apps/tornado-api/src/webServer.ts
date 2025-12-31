@@ -5,11 +5,16 @@ import { Markdown } from "@grep3/core";
 import config from "./config";
 import log from "./logger";
 import bindRoutes from "./routes";
+import { initializeWeb3 } from "./libs/Web3Initializer";
 
 dotenv.config({ quiet: true });
 
 (async function webServer() {
   try {
+    // Initialize Web3 instances before starting the server
+    log.info("Initializing Web3 instances...");
+    await initializeWeb3();
+
     const app = express();
     app.disable("x-powered-by");
     app.set("trust proxy", true);

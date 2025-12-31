@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import Web3 from "web3";
 import { IRoute } from "./index";
 import {
   checkDepositNote,
@@ -11,37 +10,15 @@ import {
   getSupportedCurrencies,
   isValidDepositNote,
 } from "../libs/TornadoOperations";
-import Web3Instances from "../libs/Web3";
-import { addAccountToWeb3 } from "../libs/Wallets";
+import { getWeb3Instance } from "../libs/Web3Initializer";
 import config from "../config";
 import log from "../logger";
-
-// Initialize Web3 instances
-let web3Instances: { [key: number]: Web3 } = {};
-
-(async function initWeb3() {
-  try {
-    web3Instances = await Web3Instances();
-    // Add relay account to all web3 instances
-    Object.keys(web3Instances).forEach((key: string) => {
-      const w3 = web3Instances[parseInt(key)];
-      addAccountToWeb3(w3, config.withdrawalPkey);
-    });
-    log.info("Web3 instances initialized");
-  } catch (err) {
-    log.error("Failed to initialize Web3 instances", err);
-  }
-})();
 
 /**
  * Helper to get Web3 instance for network
  */
-function getWeb3(networkId?: number): Web3 {
-  const netId = networkId || 1; // Default to mainnet
-  if (!web3Instances[netId]) {
-    throw new Error(`Web3 instance not available for network ${netId}`);
-  }
-  return web3Instances[netId];
+function getWeb3(networkId?: number) {
+  return getWeb3Instance(networkId);
 }
 
 /**

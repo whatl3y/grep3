@@ -3,6 +3,7 @@ import { Kysely, sql } from "kysely";
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable("executions")
+    .ifNotExists()
     .addColumn("id", "serial", (col) => col.primaryKey())
     .addColumn("repo_id", "integer", (col) =>
       col.references("repos.id").onDelete("cascade").notNull()

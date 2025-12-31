@@ -14,10 +14,6 @@ export interface IAddress {
   address: string;
 }
 
-export interface IAccountAndENS {
-  account: Account;
-  ens: string | null;
-}
 import ERC20 from "./web3/ERC20";
 
 dayjs.extend(utc);
