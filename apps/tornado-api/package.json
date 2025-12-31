@@ -1,0 +1,52 @@
+{
+  "name": "tornado-api",
+  "version": "0.0.1",
+  "author": "Lance Whatley <lance@moontography.com>",
+  "description": "Tornado Cash RESTful API for privacy-preserving transactions",
+  "engines": {
+    "node": ">=16 <23"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whatl3y/grep3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/webServer.js",
+    "test": "mocha --exit -r ts-node/register --recursive './src/**/*.spec.ts'"
+  },
+  "dependencies": {
+    "@grep3/core": "workspace:*",
+    "axios": "^0.24.0",
+    "bignumber.js": "^9.0.1",
+    "buffer": "^6.0.3",
+    "bunyan": "^1.8.12",
+    "circom": "0.0.35",
+    "circomlibjs": "^0.1.7",
+    "dayjs": "^1.11.9",
+    "dotenv": "^17.2.3",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.7.2",
+    "express": "^5.2.1",
+    "fixed-merkle-tree": "^0.6.1",
+    "snarkjs": "git+https://github.com/tornadocash/snarkjs.git#869181cfaf7526fe8972073d31655493a04326d5",
+    "tornado-ts": "^0.0.4",
+    "web3": "^1.10.1",
+    "web3-core": "^1.10.1",
+    "web3-eth": "^1.10.1",
+    "web3-eth-contract": "^1.10.1",
+    "web3-utils": "^1.10.1",
+    "websnark": "git+https://github.com/tornadocash/websnark.git#4c0af6a8b65aabea3c09f377f63c44e7a58afa6d"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.6",
+    "@types/express": "^5.0.6",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^24.10.1",
+    "@types/web3": "^1.2.2",
+    "mocha": "^5.2.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.9.3"
+  },
+  "license": "MIT"
+}

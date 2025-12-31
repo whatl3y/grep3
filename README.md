@@ -1,3 +1,3 @@
 # grep3
 
-System to execute any code that can be built into and ran from a docker container.
+Microservices built to not need accounts and support monetization through web3 rails (i.e. x402 among others)

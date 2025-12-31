@@ -22,12 +22,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=grep3
 
-  # Engine app services
-  engine-web:
+  exec-engine-web:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/engine/Dockerfile
+      dockerfile: ./apps/exec-engine/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -35,71 +34,143 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./apps/engine/.env
+      - ./apps/exec-engine/.env
     environment:
       - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://engine-web:8000
+      - HOST=http://exec-engine-web:8000
       - PORT=8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
+      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
 
-  engine-workers:
+  exec-engine-workers:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/engine/Dockerfile.worker
+      dockerfile: ./apps/exec-engine/Dockerfile.worker
     depends_on:
       - postgres
       - redis
       - docker
     env_file:
-      - ./apps/engine/.env
+      - ./apps/exec-engine/.env
     environment:
       - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://engine-web:8000
+      - HOST=http://exec-engine-web:8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
+      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
 
-  engine-scheduler:
+  exec-engine-scheduler:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/engine/Dockerfile.scheduler
+      dockerfile: ./apps/exec-engine/Dockerfile.scheduler
     depends_on:
       - redis
     env_file:
-      - ./apps/engine/.env
+      - ./apps/exec-engine/.env
     environment:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=redis:6379
     volumes:
-      - ./apps/engine/dist:/usr/grep3/apps/engine/dist
+      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
 
-  # Web app services
-  web-app:
+  exec-api:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/web/Dockerfile
+      dockerfile: ./apps/exec-api/Dockerfile
     depends_on:
       - postgres
       - redis
     ports:
       - "8080:8080"
     env_file:
-      - ./apps/web/.env
+      - ./apps/exec-api/.env
     environment:
       - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://web-app:8080
+      - HOST=http://exec-api:8080
       - PORT=8080
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/web/dist:/usr/grep3/apps/web/dist
+      - ./apps/exec-api/dist:/usr/grep3/apps/exec-api/dist
+
+  tornado-api:
+    restart: always
+    build:
+      context: ./apps/tornado-api
+      dockerfile: ./Dockerfile
+    depends_on:
+      - redis
+    ports:
+      - "8090:8090"
+    env_file:
+      - ./apps/tornado-api/.env
+    environment:
+      - HOST=http://tornado-api:8090
+      - PORT=8090
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/tornado-api/dist:/usr/tornado-api/dist
+
+  merkletree-api-web:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/merkletree-api/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./apps/merkletree-api/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://merkletree-api-web:8002
+      - PORT=8002
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/merkletree-api/dist:/usr/grep3/apps/merkletree-api/dist
+
+  merkletree-api-workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/merkletree-api/Dockerfile.worker
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/merkletree-api/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://merkletree-api-web:8002
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/merkletree-api/dist:/usr/grep3/apps/merkletree-api/dist
+
+  merkletree-api-scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/merkletree-api/Dockerfile.scheduler
+    depends_on:
+      - redis
+    env_file:
+      - ./apps/merkletree-api/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/merkletree-api/dist:/usr/grep3/apps/merkletree-api/dist

@@ -9,6 +9,8 @@ import {
 export interface Database {
   repos: RepoTable;
   executions: ExecutionTable;
+  merkletrees: MerkleTreeTable;
+  merkletree_values: MerkleTreeValueTable;
 }
 
 export interface RepoTable {
@@ -41,3 +43,29 @@ export type RepoUpdate = Updateable<RepoTable>;
 export type Execution = Selectable<ExecutionTable>;
 export type NewExecution = Insertable<ExecutionTable>;
 export type ExecutionUpdate = Updateable<ExecutionTable>;
+
+export interface MerkleTreeTable {
+  id: Generated<number>;
+  root_hash: string;
+  job_uuid: string;
+  job_status: string;
+  job_status_info: string | null;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export interface MerkleTreeValueTable {
+  id: Generated<number>;
+  merkletree_id: number;
+  unique_id: string;
+  values: string;
+  proof: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type MerkleTree = Selectable<MerkleTreeTable>;
+export type NewMerkleTree = Insertable<MerkleTreeTable>;
+export type MerkleTreeUpdate = Updateable<MerkleTreeTable>;
+
+export type MerkleTreeValue = Selectable<MerkleTreeValueTable>;
+export type NewMerkleTreeValue = Insertable<MerkleTreeValueTable>;
+export type MerkleTreeValueUpdate = Updateable<MerkleTreeValueTable>;

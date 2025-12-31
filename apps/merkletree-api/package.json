@@ -1,0 +1,47 @@
+{
+  "name": "@grep3/merkletree-api",
+  "version": "0.0.1",
+  "description": "Merkle tree generation and management API with background job processing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whatl3y/grep3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "resque:retry": "node dist/tasks/resque/retryFailedJobs",
+    "resque:worker": "node dist/resqueWorker",
+    "resque:scheduler": "node dist/resqueScheduler",
+    "start": "node dist/tasks/migrate.js && node dist/webServer.js",
+    "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
+  },
+  "author": "Lance Whatley <lance@moontography.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@grep3/core": "workspace:*",
+    "@openzeppelin/merkle-tree": "^1.0.8",
+    "bunyan": "^1.8.15",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.8.2",
+    "kysely": "^0.28.8",
+    "minimist": "^1.2.8",
+    "multer": "^1.4.5-lts.1",
+    "node-resque": "^9.3.8",
+    "pg": "^8.16.3",
+    "uuid": "^11.0.4"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "@types/express": "^5.0.6",
+    "@types/minimist": "^1.2.5",
+    "@types/mocha": "^10.0.10",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "@types/uuid": "^10.0.0",
+    "mocha": "^11.7.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
