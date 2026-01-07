@@ -1,0 +1,95 @@
+services:
+  # =============================================================================
+  # WEB SERVER - Main interface for predictions
+  # =============================================================================
+  # Usage: docker compose up web
+  # Access: http://localhost:8096
+  web:
+    build: .
+    ports:
+      - "8096:8096"
+    volumes:
+      - ncaa-data:/app/data
+    environment:
+      - PORT=8096
+    restart: unless-stopped
+
+  # =============================================================================
+  # DATA PIPELINE - Run these to prepare data and train the model
+  # =============================================================================
+
+  # Step 1: Update data from Sports-Reference (scrapes team stats and games)
+  # Usage: docker compose run --rm update-data
+  # Optional: docker compose run --rm update-data --start 2020 --end 2025
+  update-data:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["ncaa-predict", "update-data"]
+
+  # Step 2: Train the prediction model
+  # Usage: docker compose run --rm train
+  train:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["ncaa-predict", "train"]
+
+  # =============================================================================
+  # UTILITY SERVICES
+  # =============================================================================
+
+  # Run CLI predictions directly (alternative to web interface)
+  # Usage: docker compose run --rm predict Duke "North Carolina"
+  predict:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["ncaa-predict"]
+
+  # Show team rankings
+  # Usage: docker compose run --rm rankings
+  rankings:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["ncaa-predict", "rankings"]
+
+  # List available teams
+  # Usage: docker compose run --rm teams
+  # Usage: docker compose run --rm teams Duke
+  teams:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["ncaa-predict", "teams"]
+
+  # =============================================================================
+  # FULL PIPELINE - Backfill, train, and start web server
+  # =============================================================================
+  # Usage: docker compose run --rm setup (runs update-data + train, then exits)
+  setup:
+    build: .
+    volumes:
+      - ncaa-data:/app/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "========================================="
+        echo "NCAA Basketball Predictor - Initial Setup"
+        echo "========================================="
+        echo ""
+        echo "Step 1/2: Updating data from Sports-Reference..."
+        ncaa-predict update-data --start 2020 --end 2026
+        echo ""
+        echo "Step 2/2: Training prediction model..."
+        ncaa-predict train
+        echo ""
+        echo "========================================="
+        echo "Setup complete! You can now run:"
+        echo "  docker compose up web"
+        echo "========================================="
+
+volumes:
+  ncaa-data:
+    name: ncaa-predict-data

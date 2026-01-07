@@ -1,0 +1,110 @@
+/* CSS Custom Properties - Light Theme */
+:root {
+  /* Base colors */
+  --color-bg-primary: #fafafa;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f5f5f5;
+  --color-bg-elevated: #ffffff;
+
+  /* Text colors */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-text-muted: #b3b3b3;
+
+  /* Border colors */
+  --color-border-light: #ebebeb;
+  --color-border-medium: #e0e0e0;
+  --color-border-dark: #d0d0d0;
+
+  /* Accent colors - refined and subtle */
+  --color-accent-primary: #1a1a1a;
+  --color-accent-secondary: #4a4a4a;
+  --color-accent-success: #2d8f5e;
+  --color-accent-info: #3b82f6;
+  --color-accent-warning: #d97706;
+  --color-accent-error: #dc2626;
+
+  /* Chart colors */
+  --color-chart-buy: rgba(45, 143, 94, 0.65);
+  --color-chart-sell: rgba(220, 38, 38, 0.55);
+  --color-chart-price: #1a1a1a;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+}
+
+/* Global scrollbar styles - refined and subtle */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-dark);
+}
+
+/* Global selection styles */
+::selection {
+  background: rgba(26, 26, 26, 0.1);
+  color: var(--color-text-primary);
+}
+
+/* Global link styles */
+a {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-text-secondary);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* Monospace font utility */
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}

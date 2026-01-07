@@ -1,0 +1,227 @@
+.combined-chart-container {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.pair-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.current-price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+}
+
+.price-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.price-change {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.price-change.positive {
+  color: var(--color-accent-success);
+}
+
+.price-change.negative {
+  color: var(--color-accent-error);
+}
+
+.chart-legend {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.chart-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.chart-legend .legend-color {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.chart-legend .legend-color.buy {
+  background: rgba(140, 160, 180, 0.6);
+  border: 1px solid rgba(140, 160, 180, 0.8);
+}
+
+.chart-legend .legend-color.sell {
+  background: rgba(232, 121, 87, 0.6);
+  border: 1px solid rgba(232, 121, 87, 0.8);
+}
+
+.chart-area {
+  position: relative;
+  width: 100%;
+}
+
+.price-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.liquidity-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hover-tooltip {
+  position: fixed;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  min-width: 220px;
+  max-width: 280px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.hover-tooltip .tooltip-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.hover-tooltip .tooltip-divider {
+  height: 1px;
+  background: var(--color-border-light);
+  margin: var(--space-sm) 0;
+}
+
+.hover-tooltip .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+  gap: var(--space-md);
+}
+
+.hover-tooltip .tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.hover-tooltip .tooltip-label {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hover-tooltip .tooltip-value {
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+}
+
+.hover-tooltip .tooltip-value.positive {
+  color: var(--color-accent-success);
+}
+
+.hover-tooltip .tooltip-value.negative {
+  color: var(--color-accent-error);
+}
+
+.hover-tooltip .tooltip-side-buy {
+  color: rgba(140, 160, 180, 1);
+}
+
+.hover-tooltip .tooltip-side-sell {
+  color: rgba(232, 121, 87, 1);
+}
+
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-light);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.data-source {
+  font-style: italic;
+}
+
+.liquidity-note {
+  text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chart-header {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .price-value {
+    font-size: 24px;
+  }
+
+  .current-price {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .chart-legend {
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .chart-footer {
+    flex-direction: column;
+    gap: var(--space-xs);
+    text-align: center;
+  }
+
+  .liquidity-note {
+    text-align: center;
+  }
+}

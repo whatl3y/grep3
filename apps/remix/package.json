@@ -1,0 +1,33 @@
+{
+  "name": "@grep3/remix",
+  "version": "0.0.1",
+  "description": "Remix any website into different styles (8-bit retro, modern sleek, etc.) using OpenAI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whatl3y/grep3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/webServer.js",
+    "dev": "ts-node src/webServer.ts",
+    "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
+  },
+  "author": "Lance Whatley <lance@moontography.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@grep3/core": "workspace:*",
+    "bunyan": "^1.8.15",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "openai": "^4.77.3",
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.1",
+    "mocha": "^11.7.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

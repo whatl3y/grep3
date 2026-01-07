@@ -95,44 +95,44 @@ export const checkNote: IRoute = {
   },
 };
 
-/**
- * POST /deposit
- * Deposit funds into Tornado Cash
- * Body: { currency: string, amount: string, userPrivateKey: string, networkId?: number }
- */
-export const deposit: IRoute = {
-  method: "post",
-  path: "/deposit",
-  async handler(req: Request, res: Response) {
-    try {
-      const { currency, amount, userPrivateKey, networkId } = req.body;
+// /**
+//  * POST /deposit
+//  * Deposit funds into Tornado Cash
+//  * Body: { currency: string, amount: string, userPrivateKey: string, networkId?: number }
+//  */
+// export const deposit: IRoute = {
+//   method: "post",
+//   path: "/deposit",
+//   async handler(req: Request, res: Response) {
+//     try {
+//       const { currency, amount, userPrivateKey, networkId } = req.body;
 
-      if (!currency || !amount || !userPrivateKey) {
-        return res.status(400).json({
-          error: "Missing required fields: currency, amount, userPrivateKey",
-        });
-      }
+//       if (!currency || !amount || !userPrivateKey) {
+//         return res.status(400).json({
+//           error: "Missing required fields: currency, amount, userPrivateKey",
+//         });
+//       }
 
-      const web3 = getWeb3(networkId);
-      const result = await depositToTornado(
-        web3,
-        currency,
-        amount,
-        userPrivateKey
-      );
+//       const web3 = getWeb3(networkId);
+//       const result = await depositToTornado(
+//         web3,
+//         currency,
+//         amount,
+//         userPrivateKey
+//       );
 
-      res.json({
-        success: true,
-        data: result,
-      });
-    } catch (err: any) {
-      log.error("Error depositing to Tornado", err);
-      res.status(500).json({
-        error: err.message || "Failed to deposit to Tornado Cash",
-      });
-    }
-  },
-};
+//       res.json({
+//         success: true,
+//         data: result,
+//       });
+//     } catch (err: any) {
+//       log.error("Error depositing to Tornado", err);
+//       res.status(500).json({
+//         error: err.message || "Failed to deposit to Tornado Cash",
+//       });
+//     }
+//   },
+// };
 
 /**
  * POST /withdraw
@@ -211,8 +211,7 @@ export const withdrawWithProof: IRoute = {
 
       if (!tornadoInstanceAddress || !proof || !args) {
         return res.status(400).json({
-          error:
-            "Missing required fields: tornadoInstanceAddress, proof, args",
+          error: "Missing required fields: tornadoInstanceAddress, proof, args",
         });
       }
 

@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import { getAddress, isAddress } from "ethers";
-import { mkdir } from "fs/promises";
+import { mkdir, readFile } from "fs/promises";
 import { Git } from "node-git-server";
 import {
   GitServer,
@@ -10,7 +10,6 @@ import {
   defaultRootDir,
   FileManagement,
   db,
-  Markdown,
   IFactoryOptions,
 } from "@grep3/core";
 import redis from "./redis";
@@ -105,16 +104,16 @@ dotenv.config({ quiet: true });
       }
     });
 
-    // present README on home page
+    // present setup guide on home page
     app.get("/", async (_, res) => {
       try {
-        res.send(
-          await Markdown.convertFileToHtml(
-            path.join(__dirname, "..", "README.md")
-          )
+        const html = await readFile(
+          path.join(__dirname, "templates", "index.html"),
+          "utf-8"
         );
+        res.type("html").send(html);
       } catch (err: any) {
-        res.status(505).send(err.stack);
+        res.status(500).send(err.stack);
       }
     });
 

@@ -43,7 +43,7 @@ curl -X GET https://api.grep3.com/status
 Get all repositories for a given Ethereum address.
 
 ```sh
-curl -X GET https://api.grep3.com/repos/0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb/all
+curl -X GET https://api.grep3.com/repos/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045/all
 ```
 
 **GET** `/repos/:id/get`
@@ -96,11 +96,11 @@ Git server endpoint for pushing and pulling repositories. The username should be
 
 ```sh
 # Add remote
-git remote add web3 https://api.grep3.com/0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb/my-repo
+git remote add grep3 https://git.grep3.com/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045/my-repo
 
 # Push code
-git push web3 main
+git push grep3 main
 
 # Clone repository
-git clone https://api.grep3.com/0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb/my-repo
+git clone https://git.grep3.com/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045/my-repo
 ```

@@ -1,0 +1,232 @@
+.liquidity-depth-container {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.depth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.depth-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.depth-legend {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.depth-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.depth-legend .legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.depth-legend .legend-color.buy {
+  background: var(--color-chart-buy);
+}
+
+.depth-legend .legend-color.sell {
+  background: var(--color-chart-sell);
+}
+
+.depth-chart {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-y: auto;
+}
+
+.price-axis {
+  display: none; /* Hidden - we show price inline with bars */
+}
+
+.bars-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.depth-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 4px 0;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.depth-bar-row:hover {
+  background: var(--color-bg-tertiary);
+}
+
+.depth-bar-row.current {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-medium);
+  padding: 6px var(--space-sm);
+  margin: var(--space-xs) 0;
+}
+
+.bar-price {
+  width: 60px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-text-tertiary);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 20px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width 0.3s ease;
+}
+
+.bar-fill.buy {
+  background: var(--color-chart-buy);
+}
+
+.bar-fill.sell {
+  background: var(--color-chart-sell);
+}
+
+.current-price-marker {
+  position: absolute;
+  right: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-medium);
+}
+
+.bar-value {
+  width: 100px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-text-secondary);
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.depth-tooltip {
+  position: fixed;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  min-width: 280px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+}
+
+.depth-tooltip .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.depth-tooltip .tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.depth-tooltip .tooltip-label {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+}
+
+.depth-tooltip .tooltip-value {
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.depth-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-light);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.pair-label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.bucket-info {
+  font-size: 11px;
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .depth-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .bar-price {
+    width: 50px;
+    font-size: 10px;
+  }
+
+  .bar-value {
+    width: 80px;
+    font-size: 10px;
+  }
+
+  .depth-tooltip {
+    left: var(--space-md);
+    right: var(--space-md);
+    transform: none;
+    min-width: auto;
+  }
+}

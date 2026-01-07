@@ -121,6 +121,21 @@ services:
     volumes:
       - ./apps/tornado-api/dist:/usr/grep3/apps/tornado-api/dist
 
+  remix:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/remix/Dockerfile
+    ports:
+      - "8088:8088"
+    env_file:
+      - ./apps/remix/.env
+    environment:
+      - HOST=http://remix:8088
+      - PORT=8088
+    volumes:
+      - ./apps/remix/dist:/usr/grep3/apps/remix/dist
+
   merkletree-api-web:
     restart: always
     build:
@@ -174,3 +189,54 @@ services:
       - WAIT_HOSTS=redis:6379
     volumes:
       - ./apps/merkletree-api/dist:/usr/grep3/apps/merkletree-api/dist
+
+  liquidity-server:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/liquidity/server/Dockerfile
+    depends_on:
+      - redis
+    ports:
+      - "8095:8095"
+    env_file:
+      - ./apps/liquidity/server/.env
+    environment:
+      - HOST=http://liquidity-server:8095
+      - PORT=8095
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+      # ETH_RPC_URL is required - set in .env file or uncomment below
+      # - ETH_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+    volumes:
+      - ./apps/liquidity/server/dist:/usr/grep3/apps/liquidity/server/dist
+
+  liquidity-client:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/liquidity/client/Dockerfile
+    depends_on:
+      - liquidity-server
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://liquidity-server:8095
+    volumes:
+      - ./apps/liquidity/client/dist:/app/dist
+
+  ncaab-predict:
+    restart: always
+    build:
+      context: ./apps/ncaab-predict
+      dockerfile: Dockerfile
+    ports:
+      - "8096:8096"
+    environment:
+      - PORT=8096
+    volumes:
+      - ncaab-predict-data:/app/data
+
+volumes:
+  ncaab-predict-data:
+    name: ncaab-predict-data

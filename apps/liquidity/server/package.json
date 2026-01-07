@@ -1,0 +1,44 @@
+{
+  "name": "@grep3/liquidity-server",
+  "version": "0.0.1",
+  "author": "Lance Whatley <lance@moontography.com>",
+  "description": "Uniswap V3/V4 Liquidity Visualization API",
+  "engines": {
+    "node": ">=18 <23"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whatl3y/grep3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/webServer.ts",
+    "start": "node dist/webServer.js",
+    "test": "mocha --exit -r ts-node/register --recursive './src/**/*.spec.ts'"
+  },
+  "dependencies": {
+    "@grep3/core": "workspace:*",
+    "@uniswap/sdk-core": "^6.0.0",
+    "@uniswap/v3-sdk": "^3.13.1",
+    "bignumber.js": "^9.1.2",
+    "bunyan": "^1.8.15",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.13.4",
+    "express": "^5.2.1",
+    "ioredis": "^5.8.2",
+    "jsbi": "3.2.5",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "mocha": "^10.8.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "license": "MIT"
+}
