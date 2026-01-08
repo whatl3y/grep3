@@ -10,12 +10,12 @@ import {
   findRepoByAddressAndName,
   updateRepo,
 } from "../database/models/repos";
-import { IFactoryOptions } from "../factory";
 import {
-  verifySignature,
-  parseAuthCredential,
-  generateNonce,
-} from "./SignatureAuth";
+  findAddressByAddress,
+  findOrCreateAddress,
+} from "../database/models/addresses";
+import { IFactoryOptions } from "../factory";
+import { verifySignature, parseAuthCredential } from "./SignatureAuth";
 
 const aws = Aws();
 
@@ -61,19 +61,18 @@ export default function GitServer(
             return;
           }
 
-          // Check if repo exists in DB - if not, allow the push (first claim)
-          const repoName = repo.endsWith(".git") ? repo : `${repo}.git`;
-          const existingRepo = await findRepoByAddressAndName(address, repoName);
+          // Check if address has any existing repos - if not, allow the push (first claim)
+          const existingAddress = await findAddressByAddress(address);
 
-          if (!existingRepo) {
-            // New repo - anyone can claim it
+          if (!existingAddress) {
+            // New address - anyone can claim it with first push
             log.debug(
-              `New repo ${address}/${repoName}, allowing unauthenticated push`
+              `New address ${address}, allowing unauthenticated push`
             );
             return;
           }
 
-          // Existing repo - require signature authentication
+          // Existing address - require signature authentication
           // Get both username and password - credential can be in either field
           const [username, password] = await user();
 
@@ -86,7 +85,7 @@ export default function GitServer(
 
           if (!parsed) {
             log.warn(
-              `Push to ${address}/${repoName} rejected: no valid credentials provided`
+              `Push to ${address} rejected: no valid credentials provided`
             );
             throw new Error(
               "Authentication required. Use signature as username or password. " +
@@ -94,30 +93,32 @@ export default function GitServer(
             );
           }
 
-          // Verify the signature
+          // Verify the signature against the address nonce (not repo-specific)
           const { signature } = parsed;
           const result = verifySignature(
             signature,
             address,
-            repoName,
-            existingRepo.auth_nonce
+            existingAddress.auth_nonce
           );
 
           if (!result.valid) {
-            log.warn(`Push to ${address}/${repoName} rejected: ${result.error}`);
+            log.warn(`Push to ${address} rejected: ${result.error}`);
             throw new Error(result.error || "Invalid signature");
           }
 
-          // Signature is valid - no nonce increment, signature can be reused
-          log.info(`Authenticated push to ${address}/${repoName}`);
+          // Signature is valid - can be reused for any repo under this address
+          log.info(`Authenticated push to ${address}`);
         },
       });
 
       // handle git pushes
       repos.on("push", async function onPush(push: PushData) {
+        // Normalize repo name to always end with .git
+        const repoName = push.repo.endsWith(".git") ? push.repo : `${push.repo}.git`;
+
         // Clean up stale working directory for new repos
         // (used by /view route). Don't clean up bare repo - git server needs it for the push.
-        const repoNameClean = push.repo.replace(/\.git$/, "");
+        const repoNameClean = repoName.replace(/\.git$/, "");
         const workingDirPath = path.join(filePath, `${repoNameClean}-working`);
 
         try {
@@ -131,12 +132,12 @@ export default function GitServer(
         push.res.on("finish", async (): Promise<void> => {
           try {
             log.debug(
-              `push success ${push.repo}:${push.branch}:${push.commit}`
+              `push success ${repoName}:${push.branch}:${push.commit}`
             );
             const { name: tarballName, fullFilePath } = await tarRepo(
               rootDir,
               address,
-              push.repo
+              repoName
             );
 
             // send tarball repo to AWS
@@ -145,10 +146,13 @@ export default function GitServer(
               data: createReadStream(fullFilePath),
             });
 
+            // Ensure address record exists (creates with random nonce if new)
+            await findOrCreateAddress(address);
+
             // Re-check DB in case repo was created between push start and finish
             const repoInDb = await findRepoByAddressAndName(
               address,
-              push.repo
+              repoName
             );
 
             // write to DB
@@ -160,8 +164,7 @@ export default function GitServer(
               await createRepo({
                 address: address,
                 internal_name: internalFilename,
-                name: push.repo,
-                auth_nonce: generateNonce(),
+                name: repoName,
               });
             }
 
@@ -169,7 +172,7 @@ export default function GitServer(
             if (onPushCallback) {
               const pushEvent: PushEvent = {
                 address,
-                repo: push.repo,
+                repo: repoName,
                 branch: push.branch,
                 commit: push.commit,
               };
@@ -243,8 +246,10 @@ export async function untarRepoFromAws(
   repoName: string
 ): Promise<boolean> {
   const userGitDir = path.join(rootDir, address);
+  // Normalize repo name to always end with .git
+  const normalizedRepoName = repoName.endsWith(".git") ? repoName : `${repoName}.git`;
 
-  const repo = await findRepoByAddressAndName(address, repoName);
+  const repo = await findRepoByAddressAndName(address, normalizedRepoName);
   if (!repo) return false;
   log.debug(`repo found`, repo);
 

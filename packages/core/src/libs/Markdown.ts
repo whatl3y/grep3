@@ -17,6 +17,10 @@ const markdown = MarkdownIt({
 });
 
 export default {
+  render(content: string): string {
+    return markdown.render(content, {});
+  },
+
   async convertFileToHtml(filePath: string): Promise<string> {
     const mdRaw: string = await readFile(filePath, "utf8");
     const mdHtml = markdown.render(mdRaw, {});

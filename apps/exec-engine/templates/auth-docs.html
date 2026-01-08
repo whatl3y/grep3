@@ -781,13 +781,7 @@
           <div class="form-group">
             <label class="form-label" for="address-input">Ethereum Address</label>
             <input type="text" id="address-input" class="form-input" placeholder="0x..." disabled>
-            <p class="form-hint">Connect your wallet to auto-fill, or enter manually</p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="repo-input">Repository Name</label>
-            <input type="text" id="repo-input" class="form-input" placeholder="my-repo">
-            <p class="form-hint">The name of your existing repository (without .git)</p>
+            <p class="form-hint">Connect your wallet to auto-fill</p>
           </div>
 
           <button id="sign-btn" class="sign-btn" disabled>
@@ -805,9 +799,10 @@
     <section>
       <div class="section-label">Overview</div>
       <ul class="overview-list">
-        <li>grep3 uses Ethereum signatures to protect existing repositories</li>
-        <li>Anyone can push to claim a new address/repo combination</li>
-        <li>Once claimed, subsequent pushes require proof of address ownership</li>
+        <li>grep3 uses Ethereum signatures to protect your repositories</li>
+        <li>Anyone can push to claim a new address on their first push</li>
+        <li>Once claimed, all subsequent pushes require proof of address ownership</li>
+        <li>One signature works for all repos under your address</li>
         <li>Signatures are persistent and can be reused until revoked</li>
       </ul>
     </section>
@@ -821,7 +816,7 @@
             <span class="step-title">Get your challenge</span>
           </div>
           <p class="step-description">
-            Use the tool above or request a challenge via API. The challenge includes your address, repo name, and a nonce.
+            Use the tool above or request a challenge via API. The challenge includes your address and a nonce.
           </p>
           <div class="terminal">
             <div class="terminal-header">
@@ -831,7 +826,7 @@
               <span class="terminal-label">API</span>
             </div>
             <div class="terminal-body">
-              <code><span class="cmd">curl</span> <span class="url">https://git.grep3.com/auth/challenge/0xYourAddress/repo-name</span></code>
+              <code><span class="cmd">curl</span> <span class="url">https://git.grep3.com/auth/challenge/0xYourAddress</span></code>
             </div>
           </div>
         </div>
@@ -852,7 +847,7 @@
             <span class="step-title">Push with credentials</span>
           </div>
           <p class="step-description">
-            Use the generated credential as your git password (or username). The credential can be placed in either field.
+            Use the generated credential as your git password (or username). The credential can be placed in either field. This same credential works for all repos under your address.
           </p>
           <div class="credential-format">
             <span class="credential-segment credential-signature">0x{signature}</span>
@@ -879,6 +874,7 @@
       <div class="section-label">Security</div>
       <ul class="security-list">
         <li>Signatures are persistent — sign once, push forever</li>
+        <li>One credential works for all repos under your address</li>
         <li>Revoke signatures anytime by regenerating your nonce</li>
         <li>Your private key never leaves your wallet</li>
         <li>The server only verifies signatures, never stores them</li>
@@ -886,41 +882,39 @@
 
       <div class="note info" style="margin-top: 24px;">
         <div class="note-title">First push</div>
-        <p>The first push to any new address/repo combination does not require authentication. This allows anyone to claim a repository. After the first push, all subsequent pushes require signature authentication.</p>
+        <p>The first push to a new address does not require authentication. This allows anyone to claim an address. After the first push, all subsequent pushes to any repo under that address require signature authentication.</p>
       </div>
 
       <div class="note warning" style="margin-top: 16px;">
         <div class="note-title">Revoking signatures</div>
-        <p>If you believe your signature has been compromised, you can revoke all existing signatures using the revoke API. This regenerates your nonce, invalidating any previously signed credentials.</p>
+        <p>If you believe your signature has been compromised, you can revoke all existing signatures using the revoke API. This regenerates your nonce, invalidating any previously signed credentials for all repos under your address.</p>
       </div>
     </section>
 
     <section>
       <div class="section-label">API Reference</div>
       <div class="info-box">
-        <div class="info-box-title">GET /auth/challenge/:address/:repo</div>
+        <div class="info-box-title">GET /auth/challenge/:address</div>
         <div class="info-box-content">
-          Returns a challenge to sign for authenticating pushes to an existing repository.<br><br>
+          Returns a challenge to sign for authenticating pushes to any repo under this address.<br><br>
           <strong>Parameters:</strong><br>
-          <code>:address</code> - Your Ethereum address<br>
-          <code>:repo</code> - Repository name (with or without .git suffix)<br><br>
+          <code>:address</code> - Your Ethereum address<br><br>
           <strong>Response (200):</strong> Challenge object with message to sign<br>
-          <strong>Response (404):</strong> Repository not found (no auth needed for first push)
+          <strong>Response (404):</strong> Address not found (no auth needed for first push)
         </div>
       </div>
 
       <div class="info-box" style="margin-top: 16px;">
-        <div class="info-box-title">POST /auth/revoke/:address/:repo</div>
+        <div class="info-box-title">POST /auth/revoke/:address</div>
         <div class="info-box-content">
-          Revokes all existing signatures for a repository by regenerating the nonce.<br><br>
+          Revokes all existing signatures for an address by regenerating the nonce.<br><br>
           <strong>Parameters:</strong><br>
-          <code>:address</code> - Your Ethereum address<br>
-          <code>:repo</code> - Repository name (with or without .git suffix)<br><br>
+          <code>:address</code> - Your Ethereum address<br><br>
           <strong>Request body:</strong><br>
-          <code>{ "signature": "0x..." }</code> - Signed message "grep3:revoke:{address}:{repo}.git"<br><br>
+          <code>{ "signature": "0x..." }</code> - Signed message "grep3:revoke:{address}"<br><br>
           <strong>Response (200):</strong> Success + new challenge to sign<br>
           <strong>Response (401):</strong> Invalid signature<br>
-          <strong>Response (404):</strong> Repository not found
+          <strong>Response (404):</strong> Address not found
         </div>
       </div>
     </section>
@@ -944,7 +938,6 @@
     // DOM elements
     const walletArea = document.getElementById('wallet-area');
     const addressInput = document.getElementById('address-input');
-    const repoInput = document.getElementById('repo-input');
     const signBtn = document.getElementById('sign-btn');
     const resultBox = document.getElementById('result-box');
     const resultTitle = document.getElementById('result-title');
@@ -998,9 +991,8 @@
 
     function updateSignButton() {
       const address = addressInput.value.trim();
-      const repo = repoInput.value.trim();
       const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
-      signBtn.disabled = !isValidAddress || !repo || !connectedAddress;
+      signBtn.disabled = !isValidAddress || !connectedAddress;
     }
 
     // Connect wallet
@@ -1041,10 +1033,9 @@
     // Sign message
     async function signMessage() {
       const address = addressInput.value.trim();
-      const repo = repoInput.value.trim();
 
-      if (!address || !repo) {
-        showError('Please enter both address and repository name');
+      if (!address) {
+        showError('Please enter your address');
         return;
       }
 
@@ -1057,8 +1048,8 @@
       signBtn.innerHTML = '<span class="spinner"></span>Fetching challenge...';
 
       try {
-        // 1. Fetch challenge
-        const challengeRes = await fetch(`/auth/challenge/${address}/${repo}`);
+        // 1. Fetch challenge (address-only endpoint)
+        const challengeRes = await fetch(`/auth/challenge/${address}`);
         const challengeData = await challengeRes.json();
 
         if (!challengeRes.ok) {
@@ -1091,7 +1082,7 @@
       resultBox.className = 'result-box success show';
       resultTitle.textContent = 'Credential Generated';
       resultContent.innerHTML = `
-        <p>Use this as your git password (or username) when pushing:</p>
+        <p>Use this as your git password (or username) when pushing to any repo under your address:</p>
         <div class="result-credential">
           <button class="copy-btn" onclick="copyCredential()">Copy</button>
           <div class="result-credential-label">Git Password</div>
@@ -1102,7 +1093,7 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
-          Persistent — use this signature for all future pushes to this repo
+          Persistent — use this signature for all repos under your address
         </div>
       `;
     }
@@ -1159,7 +1150,6 @@
     }
 
     // Event listeners
-    repoInput.addEventListener('input', updateSignButton);
     addressInput.addEventListener('input', updateSignButton);
     signBtn.addEventListener('click', signMessage);
 

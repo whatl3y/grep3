@@ -11,6 +11,7 @@ export { migrateToLatest } from "./migrate";
 
 // Database Models
 export * from "./database/models/repos";
+export * from "./database/models/addresses";
 export * from "./database/models/executions";
 export * from "./database/models/merkletrees";
 export * from "./database/models/merkletreeValues";

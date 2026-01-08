@@ -2,7 +2,7 @@ import path from "path";
 import { Request, Response } from "express";
 import { getAddress, isAddress } from "ethers";
 import { mkdir, readFile, readdir, stat, rm } from "fs/promises";
-import { GitClient, FileManagement, untarRepoFromAws } from "@grep3/core";
+import { GitClient, FileManagement, untarRepoFromAws, Markdown } from "@grep3/core";
 import config from "../config";
 import { IRoute } from "./index";
 import log from "../logger";
@@ -100,14 +100,14 @@ function getLanguageFromFilename(filename: string): string {
     ".go": "go", ".rs": "rust", ".swift": "swift", ".kt": "kotlin", ".scala": "scala",
     ".sol": "solidity",
     ".html": "html", ".htm": "html", ".xml": "xml", ".svg": "xml",
-    ".css": "css", ".scss": "scss", ".sass": "sass", ".less": "less",
-    ".json": "json", ".yaml": "yaml", ".yml": "yaml", ".toml": "toml",
+    ".css": "css", ".scss": "scss", ".sass": "scss", ".less": "less",
+    ".json": "json", ".yaml": "yaml", ".yml": "yaml", ".toml": "ini",
     ".md": "markdown", ".markdown": "markdown",
     ".sh": "bash", ".bash": "bash", ".zsh": "bash",
     ".sql": "sql", ".graphql": "graphql", ".gql": "graphql",
     ".dockerfile": "dockerfile", ".makefile": "makefile",
-    ".vue": "vue", ".svelte": "svelte",
-    ".prisma": "prisma",
+    ".vue": "xml", ".svelte": "xml",
+    ".prisma": "plaintext",
     ".env": "properties",
     ".ini": "ini", ".cfg": "ini", ".conf": "ini",
   };
@@ -269,6 +269,26 @@ function renderFileList(entries: Array<{ name: string; isDir: boolean; size?: nu
         <span>Size</span>
       </div>
       ${itemsHtml}
+    </div>
+  `;
+}
+
+function renderReadme(readmeHtml: string): string {
+  return `
+    <div class="readme-section">
+      <div class="readme-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>README.md</span>
+      </div>
+      <div class="readme-content">
+        ${readmeHtml}
+      </div>
     </div>
   `;
 }
@@ -476,6 +496,23 @@ async function handleViewRepo(req: Request, res: Response, filePath: string) {
         } else {
           const basePath = `/view/${checksumAddress}/${repoNameClean}${filePath ? "/" + filePath : ""}`;
           contentHtml = renderFileList(entries, basePath);
+
+          // At root level, check for README.md and render it below the file list
+          if (!filePath) {
+            const readmeEntry = entries.find(
+              (e) => !e.isDir && e.name.toLowerCase() === "readme.md"
+            );
+            if (readmeEntry) {
+              try {
+                const readmePath = path.join(targetPath, readmeEntry.name);
+                const readmeContent = await readFile(readmePath, "utf-8");
+                const readmeHtml = Markdown.render(readmeContent);
+                contentHtml += renderReadme(readmeHtml);
+              } catch (readmeErr) {
+                log.warn("Failed to render README.md", readmeErr);
+              }
+            }
+          }
         }
       }
     } catch (fsErr: unknown) {
@@ -487,6 +524,7 @@ async function handleViewRepo(req: Request, res: Response, filePath: string) {
     const addressShort = `${checksumAddress.slice(0, 6)}...${checksumAddress.slice(-4)}`;
     const html = template
       .replace(/\{\{REPO_NAME\}\}/g, escapeHtml(repoNameClean))
+      .replace(/\{\{ADDRESS\}\}/g, checksumAddress)
       .replace(/\{\{ADDRESS_SHORT\}\}/g, addressShort)
       .replace(/\{\{BREADCRUMB\}\}/g, breadcrumbHtml)
       .replace(/\{\{CONTENT\}\}/g, contentHtml)

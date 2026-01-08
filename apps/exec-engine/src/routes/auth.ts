@@ -3,30 +3,30 @@ import { Request, Response } from "express";
 import { readFile } from "fs/promises";
 import { isAddress, getAddress, verifyMessage } from "ethers";
 import {
-  findRepoByAddressAndName,
+  findAddressByAddress,
   createChallenge,
-  regenerateRepoNonce,
+  regenerateAddressNonce,
   generateNonce,
 } from "@grep3/core";
 import { IRoute } from "./index";
 
 /**
- * GET /auth/challenge/:address/:repo
+ * GET /auth/challenge/:address
  *
- * Returns a challenge that must be signed to authenticate pushes to an existing repository.
- * For new repositories, authentication is not required on the first push.
+ * Returns a challenge that must be signed to authenticate pushes for an address.
+ * For new addresses, authentication is not required on the first push.
  *
  * Response:
  * - 200: Challenge object with message to sign
- * - 404: Repository not found (no auth needed for first push)
+ * - 404: Address not found (no auth needed for first push)
  * - 400: Invalid address format
  */
 export const getChallenge: IRoute = {
   method: "get",
-  path: "/auth/challenge/:address/:repo",
+  path: "/auth/challenge/:address",
   async handler(req: Request, res: Response) {
     try {
-      const { address, repo } = req.params;
+      const { address } = req.params;
 
       // Validate address
       if (!isAddress(address)) {
@@ -36,25 +36,23 @@ export const getChallenge: IRoute = {
       }
 
       const checksumAddress = getAddress(address);
-      const repoName = repo.endsWith(".git") ? repo : `${repo}.git`;
 
-      // Check if repo exists
-      const existingRepo = await findRepoByAddressAndName(checksumAddress, repoName);
+      // Check if address exists
+      const existingAddress = await findAddressByAddress(checksumAddress);
 
-      if (!existingRepo) {
+      if (!existingAddress) {
         return res.status(404).json({
-          error: "Repository not found",
+          error: "Address not found",
           message:
-            "This repository does not exist yet. " +
-            "No authentication is required for the first push to claim a new repository.",
+            "This address has no repositories yet. " +
+            "No authentication is required for the first push to claim a new address.",
         });
       }
 
       // Generate challenge
       const challenge = createChallenge(
         checksumAddress,
-        repoName,
-        existingRepo.auth_nonce
+        existingAddress.auth_nonce
       );
 
       return res.json({
@@ -66,7 +64,7 @@ export const getChallenge: IRoute = {
             "Use the signature (0x...) as the git password when pushing.",
           example: "0x1234...abcd",
           persistent: true,
-          note: "Signatures can be reused until revoked. To revoke, use POST /auth/revoke/:address/:repo with a signed revocation message.",
+          note: "Signatures can be reused for any repo under this address until revoked. To revoke, use POST /auth/revoke/:address with a signed revocation message.",
         },
       });
     } catch (err) {
@@ -99,26 +97,26 @@ export const authDocs: IRoute = {
 };
 
 /**
- * POST /auth/revoke/:address/:repo
+ * POST /auth/revoke/:address
  *
- * Revokes all existing signatures for a repository by regenerating the nonce.
+ * Revokes all existing signatures for an address by regenerating the nonce.
  * Requires a signature of the revocation message to prove ownership.
  *
  * Request body:
- * - signature: Signed message "grep3:revoke:{address}:{repo}"
+ * - signature: Signed message "grep3:revoke:{address}"
  *
  * Response:
  * - 200: Revocation successful, new challenge returned
  * - 400: Invalid request (missing signature, invalid address)
  * - 401: Invalid signature
- * - 404: Repository not found
+ * - 404: Address not found
  */
 export const revokeSignatures: IRoute = {
   method: "post",
-  path: "/auth/revoke/:address/:repo",
+  path: "/auth/revoke/:address",
   async handler(req: Request, res: Response) {
     try {
-      const { address, repo } = req.params;
+      const { address } = req.params;
       const { signature } = req.body;
 
       // Validate address
@@ -131,24 +129,23 @@ export const revokeSignatures: IRoute = {
       if (!signature || typeof signature !== "string") {
         return res.status(400).json({
           error: "Missing signature",
-          message: "Sign the message 'grep3:revoke:{address}:{repo}' and include the signature in the request body.",
+          message: "Sign the message 'grep3:revoke:{address}' and include the signature in the request body.",
         });
       }
 
       const checksumAddress = getAddress(address);
-      const repoName = repo.endsWith(".git") ? repo : `${repo}.git`;
 
-      // Check if repo exists
-      const existingRepo = await findRepoByAddressAndName(checksumAddress, repoName);
+      // Check if address exists
+      const existingAddress = await findAddressByAddress(checksumAddress);
 
-      if (!existingRepo) {
+      if (!existingAddress) {
         return res.status(404).json({
-          error: "Repository not found",
+          error: "Address not found",
         });
       }
 
       // Verify the revocation signature
-      const revokeMessage = `grep3:revoke:${checksumAddress}:${repoName}`;
+      const revokeMessage = `grep3:revoke:${checksumAddress}`;
       try {
         const recoveredAddress = verifyMessage(revokeMessage, signature);
         const recoveredChecksumAddress = getAddress(recoveredAddress);
@@ -168,10 +165,10 @@ export const revokeSignatures: IRoute = {
 
       // Regenerate nonce to invalidate all existing signatures
       const newNonce = generateNonce();
-      await regenerateRepoNonce(existingRepo.id, newNonce);
+      await regenerateAddressNonce(existingAddress.id, newNonce);
 
       // Return new challenge
-      const challenge = createChallenge(checksumAddress, repoName, newNonce);
+      const challenge = createChallenge(checksumAddress, newNonce);
 
       return res.json({
         success: true,

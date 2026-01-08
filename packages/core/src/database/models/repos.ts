@@ -67,16 +67,3 @@ export async function deleteRepo(id: number) {
     .returningAll()
     .executeTakeFirst();
 }
-
-/**
- * Regenerate the auth nonce for a repository to revoke all existing signatures.
- * This invalidates any previously signed credentials for the repo.
- */
-export async function regenerateRepoNonce(id: number, newNonce: number) {
-  return await db
-    .updateTable("repos")
-    .set({ auth_nonce: newNonce })
-    .where("id", "=", id)
-    .returningAll()
-    .executeTakeFirst();
-}

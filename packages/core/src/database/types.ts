@@ -8,6 +8,7 @@ import {
 
 export interface Database {
   repos: RepoTable;
+  addresses: AddressTable;
   executions: ExecutionTable;
   merkletrees: MerkleTreeTable;
   merkletree_values: MerkleTreeValueTable;
@@ -18,7 +19,14 @@ export interface RepoTable {
   address: string;
   internal_name: string;
   name: string;
-  /** Nonce for signature-based authentication. Incremented after each authenticated push. */
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export interface AddressTable {
+  id: Generated<number>;
+  /** Ethereum address (checksummed) */
+  address: string;
+  /** Nonce for signature-based authentication. Changed when signatures are revoked. */
   auth_nonce: ColumnType<number, number | undefined, number>;
   created_at: ColumnType<Date, string | undefined, never>;
 }
@@ -41,6 +49,10 @@ export interface ExecutionTable {
 export type Repo = Selectable<RepoTable>;
 export type NewRepo = Insertable<RepoTable>;
 export type RepoUpdate = Updateable<RepoTable>;
+
+export type Address = Selectable<AddressTable>;
+export type NewAddress = Insertable<AddressTable>;
+export type AddressUpdate = Updateable<AddressTable>;
 
 export type Execution = Selectable<ExecutionTable>;
 export type NewExecution = Insertable<ExecutionTable>;
