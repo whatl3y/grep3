@@ -43,7 +43,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
+      - ./apps/exec-engine/dist:/app/dist
+      - ./apps/exec-engine/templates:/app/templates
 
   exec-engine-workers:
     restart: always

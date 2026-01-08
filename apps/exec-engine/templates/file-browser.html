@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{REPO_NAME}} — grep3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --bg-elevated: #ffffff;
+      --bg-hover: #f5f5f5;
+      --bg-active: #f0f0f0;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --border: #e5e5e5;
+      --border-subtle: #eeeeee;
+      --accent: #0066cc;
+      --accent-subtle: #e8f4fc;
+      --folder: #7c8a99;
+      --file: #9ca3af;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Bricolage Grotesque', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      background: rgba(255,255,255,0.95);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-main {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .logo-dot {
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+
+    .logo-tld {
+      font-size: 16px;
+      color: var(--text-tertiary);
+    }
+
+    .repo-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .repo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .repo-badge svg {
+      flex-shrink: 0;
+    }
+
+    .repo-address {
+      color: var(--text-tertiary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .repo-sep {
+      color: var(--text-tertiary);
+    }
+
+    .repo-name {
+      color: var(--text-primary);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 24px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .breadcrumb-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .breadcrumb-item.active {
+      color: var(--text-primary);
+      font-weight: 500;
+      background: var(--bg-active);
+    }
+
+    .breadcrumb-sep {
+      color: var(--text-tertiary);
+      user-select: none;
+    }
+
+    /* File List */
+    .file-list {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .file-list-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-tertiary);
+      background: var(--bg);
+    }
+
+    .file-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.1s ease;
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .file-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .file-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .file-icon.folder svg {
+      color: var(--folder);
+    }
+
+    .file-icon.file svg {
+      color: var(--file);
+    }
+
+    .file-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-item:hover .file-name {
+      color: var(--accent);
+    }
+
+    .file-size {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    /* File Viewer */
+    .file-viewer {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .file-viewer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .file-viewer-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .file-viewer-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .file-viewer-content {
+      overflow: auto;
+    }
+
+    /* Code Block */
+    .code-container {
+      position: relative;
+    }
+
+    .code-wrapper {
+      overflow-x: auto;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .code-wrapper pre {
+      margin: 0;
+      padding: 20px;
+      background: transparent !important;
+    }
+
+    .code-wrapper code {
+      font-family: 'IBM Plex Mono', monospace !important;
+      background: transparent !important;
+    }
+
+    .line-numbers {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 20px 0;
+      background: var(--bg);
+      border-right: 1px solid var(--border-subtle);
+      user-select: none;
+      text-align: right;
+    }
+
+    .line-number {
+      display: block;
+      padding: 0 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-tertiary);
+    }
+
+    .code-with-lines {
+      display: grid;
+      grid-template-columns: auto 1fr;
+    }
+
+    .code-with-lines .line-numbers {
+      position: static;
+    }
+
+    .code-with-lines .code-wrapper {
+      min-width: 0;
+    }
+
+    /* Image Preview */
+    .image-preview {
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: repeating-conic-gradient(var(--bg) 0% 25%, var(--bg-elevated) 0% 50%) 50% / 20px 20px;
+      min-height: 300px;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Binary / Unknown File */
+    .binary-notice {
+      padding: 60px 40px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .binary-notice-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      color: var(--text-tertiary);
+    }
+
+    .binary-notice-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .binary-notice-text {
+      font-size: 14px;
+    }
+
+    /* Raw Content (non-highlighted) */
+    .raw-content {
+      padding: 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Error State */
+    .error-state {
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .error-state-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      color: #dc3545;
+    }
+
+    .error-state-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #dc3545;
+    }
+
+    .error-state-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-inner {
+        padding: 0 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .repo-badge {
+        width: 100%;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .breadcrumb {
+        font-size: 12px;
+      }
+
+      .file-item {
+        padding: 12px 16px;
+      }
+
+      .file-viewer-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .code-wrapper pre {
+        padding: 16px;
+      }
+
+      .line-number {
+        padding: 0 12px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .file-list, .file-viewer {
+      animation: fadeIn 0.3s ease;
+    }
+
+    .file-item {
+      animation: fadeIn 0.2s ease backwards;
+    }
+
+    {{FILE_ITEM_DELAYS}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <span class="logo-main">grep3</span>
+        <span class="logo-dot">.</span>
+        <span class="logo-tld">git</span>
+      </a>
+      <div class="repo-info">
+        <div class="repo-badge">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z" fill="currentColor"/>
+          </svg>
+          <span class="repo-address">{{ADDRESS_SHORT}}</span>
+          <span class="repo-sep">/</span>
+          <span class="repo-name">{{REPO_NAME}}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="breadcrumb">
+      {{BREADCRUMB}}
+    </nav>
+
+    {{CONTENT}}
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Apply syntax highlighting
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    });
+  </script>
+</body>
+</html>

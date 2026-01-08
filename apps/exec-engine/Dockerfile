@@ -2,7 +2,8 @@ FROM node:22-slim AS builder
 
 LABEL AUTHOR="Lance Whatley"
 
-# Install pnpm
+# Install build tools for native modules and pnpm
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
 
 # specify working directory
@@ -48,8 +49,12 @@ COPY --from=builder /app .
 # Copy the built core package into node_modules
 COPY --from=builder /usr/grep3/packages/core/dist ./node_modules/@grep3/core/dist
 
-# Copy the templates directory (needed by webServer.ts)
-COPY --from=builder /usr/grep3/apps/exec-engine/src/templates ./dist/templates
+# Copy the templates directory (at app root level, not in dist)
+COPY --from=builder /usr/grep3/apps/exec-engine/templates ./templates
 
-# Run migrations then start server
-CMD ["sh", "-c", "node dist/tasks/migrate.js && node dist/webServer.js"]
+# Add docker-compose-wait to wait for dependencies (postgres, redis) before starting
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
+RUN chmod +x /wait
+
+# Wait for dependencies, run migrations, then start server
+CMD /wait && node dist/tasks/migrate.js && node dist/webServer.js

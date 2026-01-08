@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import { getAddress, isAddress } from "ethers";
-import { mkdir, readFile } from "fs/promises";
+import { mkdir } from "fs/promises";
 import { Git } from "node-git-server";
 import {
   GitServer,
@@ -12,6 +12,8 @@ import {
   db,
   IFactoryOptions,
 } from "@grep3/core";
+import bindRoutes from "./routes";
+import RecentPushes from "./libs/RecentPushes";
 import redis from "./redis";
 import config from "./config";
 import log from "./logger";
@@ -26,32 +28,24 @@ dotenv.config({ quiet: true });
     app.set("trust proxy", true);
 
     const injectArgs: IFactoryOptions = { db, log, redis };
+    const recentPushes = RecentPushes(redis);
 
-    // present setup guide on home page (must be before /:username catch-all)
-    app.get("/", async (_, res) => {
-      try {
-        const html = await readFile(
-          path.join(__dirname, "templates", "index.html"),
-          "utf-8"
-        );
-        res.type("html").send(html);
-      } catch (err: any) {
-        res.status(500).send(err.stack);
-      }
-    });
-
-    // Handle favicon and other common browser requests
-    app.get("/favicon.ico", (_, res) => res.status(204).end());
-    app.get("/robots.txt", (_, res) => res.type("text").send("User-agent: *\nDisallow:"));
+    // Bind all routes from the routes directory
+    bindRoutes(app);
 
     // git servers per username (username must be a valid Ethereum address)
-    const gitServer = GitServer(injectArgs);
-    let userGitServers: { [username: string]: Git } = {};
-    app.use("/:username", async (req, res) => {
+    const gitServer = GitServer(injectArgs, {
+      onPush: async (event) => {
+        await recentPushes.addPush(event);
+      },
+    });
+    const userGitServers: { [username: string]: Git } = {};
+    app.use("/:username", async (req, res, next) => {
       try {
         // Only handle requests where username is a valid Ethereum address
+        // Otherwise, pass to other routes
         if (!isAddress(req.params.username)) {
-          return res.status(404).send("Not found");
+          return next();
         }
         const username = getAddress(req.params.username);
         userGitServers[username] =
@@ -116,9 +110,10 @@ dotenv.config({ quiet: true });
         }
 
         userGitServers[username].handle(req, res); // connect style request handling
-      } catch (err: any) {
+      } catch (err: unknown) {
         log.error(`outer git/username error`, err);
-        res.status(500).send(err.message);
+        const message = err instanceof Error ? err.message : "Unknown error";
+        res.status(500).send(message);
       }
     });
 

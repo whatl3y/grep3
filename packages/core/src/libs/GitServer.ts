@@ -13,6 +13,18 @@ import { IFactoryOptions } from "../factory";
 
 const aws = Aws();
 
+export interface PushEvent {
+  address: string;
+  repo: string;
+  branch: string;
+  commit: string;
+}
+
+export interface GitServerOptions {
+  rootDir?: string;
+  onPush?: (event: PushEvent) => Promise<void> | void;
+}
+
 export interface IGitServer {
   rootDir: string;
   create(address: string): Promise<Git>;
@@ -22,8 +34,11 @@ export const defaultRootDir = path.join(__dirname, "..", "..", "tmp", "git");
 
 export default function GitServer(
   { log }: IFactoryOptions,
-  rootDir: string = defaultRootDir
+  options: GitServerOptions = {}
 ): IGitServer {
+  const rootDir = options.rootDir ?? defaultRootDir;
+  const onPushCallback = options.onPush;
+
   return {
     rootDir,
 
@@ -79,6 +94,17 @@ export default function GitServer(
                 internal_name: internalFilename,
                 name: push.repo,
               });
+            }
+
+            // Call optional push callback
+            if (onPushCallback) {
+              const pushEvent: PushEvent = {
+                address,
+                repo: push.repo,
+                branch: push.branch,
+                commit: push.commit,
+              };
+              await onPushCallback(pushEvent);
             }
           } catch (err) {
             log.error(`push error0`, err);

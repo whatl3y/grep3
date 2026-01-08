@@ -35,6 +35,7 @@ export {
   untarRepoFromAws,
   defaultRootDir,
 } from "./libs/GitServer";
+export type { PushEvent, GitServerOptions } from "./libs/GitServer";
 export { default as Markdown } from "./libs/Markdown";
 export * from "./libs/Utils";
 

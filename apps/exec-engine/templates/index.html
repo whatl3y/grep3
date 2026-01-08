@@ -252,6 +252,16 @@
       margin-top: 10px;
     }
 
+    .note.warning {
+      background: #fef6f3;
+      border-color: #f0d0c0;
+      border-left-color: #d97706;
+    }
+
+    .note.warning .note-title {
+      color: #b45309;
+    }
+
     /* Steps */
     .steps {
       display: grid;
@@ -387,6 +397,123 @@
       color: var(--text-tertiary);
     }
 
+    /* Recent Pushes Table */
+    .pushes-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .pushes-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pushes-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .pushes-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .pushes-table tr:hover td {
+      background: var(--bg);
+    }
+
+    .col-repo { width: 35%; }
+    .col-address { width: 25%; }
+    .col-branch { width: 20%; }
+    .col-time { width: 20%; text-align: right; }
+    .col-time:last-child { padding-right: 16px; }
+
+    .pushes-table th.col-time { text-align: right; }
+
+    .repo-link {
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .repo-link:hover {
+      color: #2c5282;
+    }
+
+    .repo-name {
+      display: inline-block;
+    }
+
+    .address {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      cursor: default;
+    }
+
+    .pushes-wrapper {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg);
+    }
+
+    .page-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .page-link:hover:not(.disabled) {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .page-link.disabled {
+      color: var(--text-tertiary);
+      cursor: default;
+    }
+
+    .page-info {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
       .container {
@@ -428,6 +555,23 @@
       .terminal-body code {
         font-size: 12px;
       }
+
+      .pushes-table th,
+      .pushes-table td {
+        padding: 10px 12px;
+      }
+
+      .pushes-table {
+        font-size: 13px;
+      }
+
+      .col-branch {
+        display: none;
+      }
+
+      .col-repo { width: 40%; }
+      .col-address { width: 35%; }
+      .col-time { width: 25%; }
     }
   </style>
 </head>
@@ -439,8 +583,19 @@
         <span class="wordmark-dot">.</span>
         <span class="wordmark-tld">git</span>
       </div>
-      <p class="tagline">Decentralized git hosting tied to your Ethereum identity. Push code, maintain ownership.</p>
+      <p class="tagline">Anonymous git hosting powered by web3. No accounts, just your Ethereum address.</p>
+      <div class="note warning" style="margin-top: 24px;">
+        <div class="note-title">Public repositories only</div>
+        <p>All repositories pushed to grep3 are publicly accessible. There is no option to create private repositories. Do not push sensitive data, credentials, API keys, or any code you wish to keep private.</p>
+      </div>
     </header>
+
+    <section>
+      <div class="section-label">Recent Activity</div>
+      <div class="pushes-wrapper">
+        {{RECENT_PUSHES}}
+      </div>
+    </section>
 
     <section>
       <div class="section-label">Remote URL Format</div>

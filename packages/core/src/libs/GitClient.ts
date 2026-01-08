@@ -63,7 +63,26 @@ export default function GitClient(
           `${hostWithAuth}/${address}/${repoName}`
         );
       }
-      await gitClient.pull("origin", mainBranch);
+
+      // Fetch all refs first to detect available branches
+      await gitClient.fetch("origin");
+
+      // Get list of remote branches to determine which one to pull
+      const branches = await gitClient.branch(["-r"]);
+      let branchToPull = mainBranch;
+
+      // Check for common branch names in order of preference
+      if (branches.all.includes("origin/main")) {
+        branchToPull = "main";
+      } else if (branches.all.includes("origin/master")) {
+        branchToPull = "master";
+      } else if (branches.all.length > 0) {
+        // Use first available remote branch (strip "origin/" prefix)
+        const firstBranch = branches.all[0].replace(/^origin\//, "");
+        branchToPull = firstBranch;
+      }
+
+      await gitClient.pull("origin", branchToPull);
     },
 
     // async overrideFileAndPush(
