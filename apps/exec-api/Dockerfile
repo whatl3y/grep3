@@ -31,4 +31,4 @@ RUN pnpm --filter=./apps/exec-api build
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 RUN chmod +x /wait
 
-CMD /wait && pnpm --filter=./apps/exec-api start
+CMD ["sh", "-c", "/wait && pnpm --filter=./apps/exec-api start"]

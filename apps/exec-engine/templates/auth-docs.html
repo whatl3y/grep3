@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication — grep3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --bg-elevated: #ffffff;
+      --text-primary: #1c1c1c;
+      --text-secondary: #6b6b6b;
+      --text-tertiary: #999999;
+      --border: #e3e3e0;
+      --border-subtle: #ececea;
+      --accent: #2d2d2d;
+      --accent-hover: #1a1a1a;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --error: #ef4444;
+      --error-bg: #fef2f2;
+      --terminal-bg: #1a1a1a;
+      --terminal-text: #e8e8e8;
+      --terminal-comment: #707070;
+      --terminal-cmd: #a8d4a8;
+      --terminal-url: #8cb4d4;
+      --terminal-param: #d4c48c;
+      --terminal-string: #d4a88c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Bricolage Grotesque', Georgia, serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      margin-bottom: 24px;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--text-primary);
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .page-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    /* Section */
+    section {
+      padding: 36px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-tertiary);
+      margin-bottom: 24px;
+    }
+
+    /* Sign Tool */
+    .sign-tool {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .sign-tool-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .sign-tool-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .wallet-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .wallet-status.connected {
+      color: var(--success);
+    }
+
+    .wallet-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+    }
+
+    .wallet-status.connected .wallet-dot {
+      background: var(--success);
+    }
+
+    .connect-btn, .sign-btn, .disconnect-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .connect-btn {
+      background: var(--accent);
+      color: white;
+    }
+
+    .connect-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .connect-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .sign-btn {
+      background: var(--accent);
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .sign-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .sign-btn:disabled {
+      background: var(--border);
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+    }
+
+    .disconnect-btn {
+      background: transparent;
+      color: var(--text-tertiary);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+
+    .disconnect-btn:hover {
+      border-color: var(--text-tertiary);
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text-primary);
+      transition: border-color 0.15s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-input:disabled {
+      background: var(--border-subtle);
+      color: var(--text-tertiary);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
+    /* Result */
+    .result-box {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-box.success {
+      background: var(--success-bg);
+      border: 1px solid #a7f3d0;
+    }
+
+    .result-box.error {
+      background: var(--error-bg);
+      border: 1px solid #fecaca;
+    }
+
+    .result-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .result-box.success .result-title {
+      color: #059669;
+    }
+
+    .result-box.error .result-title {
+      color: var(--error);
+    }
+
+    .result-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .result-credential {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      background: white;
+      border: 1px solid #d1fae5;
+      border-radius: 6px;
+      padding: 14px;
+      margin-top: 12px;
+      word-break: break-all;
+      position: relative;
+    }
+
+    .result-credential-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+
+    .result-credential-value {
+      color: var(--text-primary);
+      user-select: all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      padding: 4px 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .copy-btn.copied {
+      background: var(--success-bg);
+      border-color: #a7f3d0;
+      color: #059669;
+    }
+
+    .expiry-note {
+      font-size: 12px;
+      color: #059669;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Overview */
+    .overview-list {
+      list-style: none;
+      display: grid;
+      gap: 16px;
+    }
+
+    .overview-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .overview-list li::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--border);
+      border-radius: 50%;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Steps */
+    .steps {
+      display: grid;
+      gap: 40px;
+    }
+
+    .step {
+      display: grid;
+      gap: 16px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .step-number {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-left: 42px;
+    }
+
+    .step-description code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      background: var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    /* Terminal */
+    .terminal {
+      background: var(--terminal-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      margin-left: 42px;
+    }
+
+    .terminal-header {
+      background: #2a2a2a;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #3a3a3a;
+    }
+
+    .terminal-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: #666;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .terminal-body {
+      padding: 20px 24px;
+      overflow-x: auto;
+    }
+
+    .terminal-body code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--terminal-text);
+      display: block;
+      white-space: pre;
+    }
+
+    .terminal-body .comment { color: var(--terminal-comment); }
+    .terminal-body .cmd { color: var(--terminal-cmd); }
+    .terminal-body .url { color: var(--terminal-url); }
+    .terminal-body .param { color: var(--terminal-param); }
+    .terminal-body .string { color: var(--terminal-string); }
+
+    /* Info boxes */
+    .info-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    .info-box-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+
+    .info-box-content {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .info-box-content code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      background: var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    /* Credential format */
+    .credential-format {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      margin: 16px 0;
+      margin-left: 42px;
+    }
+
+    .credential-segment {
+      padding: 10px 14px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .credential-signature {
+      background: #e8f0f8;
+      color: #2c5282;
+    }
+
+    .credential-separator {
+      color: var(--text-tertiary);
+      padding: 10px 4px;
+    }
+
+    .credential-timestamp {
+      background: #e8f5e8;
+      color: #276749;
+    }
+
+    /* Note */
+    .note {
+      background: #f8f8f6;
+      border: 1px solid var(--border);
+      border-left: 3px solid #888;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin-top: 24px;
+    }
+
+    .note-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+
+    .note p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .note.warning {
+      background: #fef6f3;
+      border-color: #f0d0c0;
+      border-left-color: #d97706;
+    }
+
+    .note.warning .note-title {
+      color: #b45309;
+    }
+
+    .note.info {
+      background: #f3f8fe;
+      border-color: #c0d8f0;
+      border-left-color: #3b82f6;
+    }
+
+    .note.info .note-title {
+      color: #2563eb;
+    }
+
+    /* Security notes list */
+    .security-list {
+      list-style: none;
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .security-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .security-list li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    footer {
+      padding: 48px 0;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 24px;
+    }
+
+    .footer-links a {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-brand {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      header {
+        padding: 32px 0 28px;
+      }
+
+      .page-title {
+        font-size: 26px;
+      }
+
+      .page-subtitle {
+        font-size: 16px;
+      }
+
+      section {
+        padding: 32px 0;
+      }
+
+      .terminal {
+        margin-left: 0;
+        margin-top: 16px;
+      }
+
+      .step-description {
+        margin-left: 0;
+      }
+
+      .credential-format {
+        margin-left: 0;
+      }
+
+      .terminal-body {
+        padding: 16px;
+      }
+
+      .terminal-body code {
+        font-size: 11px;
+      }
+
+      .sign-tool-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to home
+      </a>
+      <h1 class="page-title">Signature Authentication</h1>
+      <p class="page-subtitle">Secure your repositories with Ethereum signature-based authentication.</p>
+    </header>
+
+    <!-- Interactive Sign Tool -->
+    <section>
+      <div class="section-label">Generate Credential</div>
+      <div class="sign-tool">
+        <div class="sign-tool-header">
+          <span class="sign-tool-title">Sign with your wallet</span>
+          <div id="wallet-area">
+            <button id="connect-btn" class="connect-btn">Connect Wallet</button>
+          </div>
+        </div>
+
+        <div id="sign-form">
+          <div class="form-group">
+            <label class="form-label" for="address-input">Ethereum Address</label>
+            <input type="text" id="address-input" class="form-input" placeholder="0x..." disabled>
+            <p class="form-hint">Connect your wallet to auto-fill, or enter manually</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="repo-input">Repository Name</label>
+            <input type="text" id="repo-input" class="form-input" placeholder="my-repo">
+            <p class="form-hint">The name of your existing repository (without .git)</p>
+          </div>
+
+          <button id="sign-btn" class="sign-btn" disabled>
+            Sign Message
+          </button>
+        </div>
+
+        <div id="result-box" class="result-box">
+          <div class="result-title" id="result-title">Success</div>
+          <div class="result-content" id="result-content"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Overview</div>
+      <ul class="overview-list">
+        <li>grep3 uses Ethereum signatures to protect existing repositories</li>
+        <li>Anyone can push to claim a new address/repo combination</li>
+        <li>Once claimed, subsequent pushes require proof of address ownership</li>
+        <li>Signatures are persistent and can be reused until revoked</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-label">How It Works</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">1</span>
+            <span class="step-title">Get your challenge</span>
+          </div>
+          <p class="step-description">
+            Use the tool above or request a challenge via API. The challenge includes your address, repo name, and a nonce.
+          </p>
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-label">API</span>
+            </div>
+            <div class="terminal-body">
+              <code><span class="cmd">curl</span> <span class="url">https://git.grep3.com/auth/challenge/0xYourAddress/repo-name</span></code>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">2</span>
+            <span class="step-title">Sign the message</span>
+          </div>
+          <p class="step-description">
+            Sign the <code>message</code> field with your Ethereum wallet. The tool above handles this automatically.
+          </p>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <span class="step-number">3</span>
+            <span class="step-title">Push with credentials</span>
+          </div>
+          <p class="step-description">
+            Use the generated credential as your git password (or username). The credential can be placed in either field.
+          </p>
+          <div class="credential-format">
+            <span class="credential-segment credential-signature">0x{signature}</span>
+          </div>
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-dot"></span>
+              <span class="terminal-label">Terminal</span>
+            </div>
+            <div class="terminal-body">
+              <code><span class="cmd">git push</span> grep3 main
+<span class="comment"># When prompted:</span>
+<span class="comment"># Username: anything (or paste credential here)</span>
+<span class="comment"># Password: &lt;paste credential&gt;</span></code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Security</div>
+      <ul class="security-list">
+        <li>Signatures are persistent — sign once, push forever</li>
+        <li>Revoke signatures anytime by regenerating your nonce</li>
+        <li>Your private key never leaves your wallet</li>
+        <li>The server only verifies signatures, never stores them</li>
+      </ul>
+
+      <div class="note info" style="margin-top: 24px;">
+        <div class="note-title">First push</div>
+        <p>The first push to any new address/repo combination does not require authentication. This allows anyone to claim a repository. After the first push, all subsequent pushes require signature authentication.</p>
+      </div>
+
+      <div class="note warning" style="margin-top: 16px;">
+        <div class="note-title">Revoking signatures</div>
+        <p>If you believe your signature has been compromised, you can revoke all existing signatures using the revoke API. This regenerates your nonce, invalidating any previously signed credentials.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">API Reference</div>
+      <div class="info-box">
+        <div class="info-box-title">GET /auth/challenge/:address/:repo</div>
+        <div class="info-box-content">
+          Returns a challenge to sign for authenticating pushes to an existing repository.<br><br>
+          <strong>Parameters:</strong><br>
+          <code>:address</code> - Your Ethereum address<br>
+          <code>:repo</code> - Repository name (with or without .git suffix)<br><br>
+          <strong>Response (200):</strong> Challenge object with message to sign<br>
+          <strong>Response (404):</strong> Repository not found (no auth needed for first push)
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 16px;">
+        <div class="info-box-title">POST /auth/revoke/:address/:repo</div>
+        <div class="info-box-content">
+          Revokes all existing signatures for a repository by regenerating the nonce.<br><br>
+          <strong>Parameters:</strong><br>
+          <code>:address</code> - Your Ethereum address<br>
+          <code>:repo</code> - Repository name (with or without .git suffix)<br><br>
+          <strong>Request body:</strong><br>
+          <code>{ "signature": "0x..." }</code> - Signed message "grep3:revoke:{address}:{repo}.git"<br><br>
+          <strong>Response (200):</strong> Success + new challenge to sign<br>
+          <strong>Response (401):</strong> Invalid signature<br>
+          <strong>Response (404):</strong> Repository not found
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="https://github.com/whatl3y/grep3">GitHub</a>
+        <a href="https://grep3.com">grep3.com</a>
+      </div>
+      <div class="footer-brand">grep3 — decentralized execution</div>
+    </footer>
+  </div>
+
+  <!-- Wallet Connection - Browser wallet with WalletConnect coming via mobile deep links -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <script>
+    // Use ethers from global (UMD build)
+    const { BrowserProvider } = ethers;
+
+    // DOM elements
+    const walletArea = document.getElementById('wallet-area');
+    const addressInput = document.getElementById('address-input');
+    const repoInput = document.getElementById('repo-input');
+    const signBtn = document.getElementById('sign-btn');
+    const resultBox = document.getElementById('result-box');
+    const resultTitle = document.getElementById('result-title');
+    const resultContent = document.getElementById('result-content');
+
+    // State
+    let connectedAddress = null;
+    let provider = null;
+    let signer = null;
+
+    // Check if browser wallet is available
+    function hasBrowserWallet() {
+      return typeof window.ethereum !== 'undefined';
+    }
+
+    // Update UI based on connection state
+    function updateUI() {
+      if (connectedAddress) {
+        const shortAddr = `${connectedAddress.slice(0, 6)}...${connectedAddress.slice(-4)}`;
+        walletArea.innerHTML = `
+          <div class="wallet-status connected">
+            <span class="wallet-dot"></span>
+            <span>${shortAddr}</span>
+          </div>
+          <button id="disconnect-btn" class="disconnect-btn">Disconnect</button>
+        `;
+        document.getElementById('disconnect-btn').addEventListener('click', disconnect);
+        addressInput.value = connectedAddress;
+        addressInput.disabled = true;
+        updateSignButton();
+      } else {
+        if (hasBrowserWallet()) {
+          walletArea.innerHTML = `<button id="connect-btn" class="connect-btn">Connect Wallet</button>`;
+          document.getElementById('connect-btn').addEventListener('click', connect);
+        } else {
+          walletArea.innerHTML = `
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+              <span class="wallet-status">No wallet detected</span>
+              <a href="https://metamask.io/download/" target="_blank" class="connect-btn" style="text-decoration: none;">Get MetaMask</a>
+            </div>
+            <p class="form-hint" style="margin-top: 12px;">
+              Mobile users: Open this page in your wallet's built-in browser (MetaMask, Rainbow, Coinbase Wallet, etc.)
+            </p>
+          `;
+        }
+        addressInput.value = '';
+        addressInput.disabled = false;
+        signBtn.disabled = true;
+      }
+    }
+
+    function updateSignButton() {
+      const address = addressInput.value.trim();
+      const repo = repoInput.value.trim();
+      const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+      signBtn.disabled = !isValidAddress || !repo || !connectedAddress;
+    }
+
+    // Connect wallet
+    async function connect() {
+      if (!hasBrowserWallet()) {
+        showError('No wallet found. Please install MetaMask or open this page in your mobile wallet browser.');
+        return;
+      }
+
+      try {
+        provider = new BrowserProvider(window.ethereum);
+        const accounts = await provider.send('eth_requestAccounts', []);
+
+        if (accounts.length > 0) {
+          connectedAddress = accounts[0];
+          signer = await provider.getSigner();
+          updateUI();
+        }
+      } catch (err) {
+        console.error('Connection error:', err);
+        if (err.code === 4001) {
+          showError('Connection rejected. Please approve the connection in your wallet.');
+        } else {
+          showError('Failed to connect: ' + (err.message || 'Unknown error'));
+        }
+      }
+    }
+
+    // Disconnect wallet
+    function disconnect() {
+      connectedAddress = null;
+      provider = null;
+      signer = null;
+      updateUI();
+      resultBox.className = 'result-box';
+    }
+
+    // Sign message
+    async function signMessage() {
+      const address = addressInput.value.trim();
+      const repo = repoInput.value.trim();
+
+      if (!address || !repo) {
+        showError('Please enter both address and repository name');
+        return;
+      }
+
+      if (!signer) {
+        showError('Please connect your wallet first');
+        return;
+      }
+
+      signBtn.disabled = true;
+      signBtn.innerHTML = '<span class="spinner"></span>Fetching challenge...';
+
+      try {
+        // 1. Fetch challenge
+        const challengeRes = await fetch(`/auth/challenge/${address}/${repo}`);
+        const challengeData = await challengeRes.json();
+
+        if (!challengeRes.ok) {
+          throw new Error(challengeData.message || challengeData.error || 'Failed to get challenge');
+        }
+
+        signBtn.innerHTML = '<span class="spinner"></span>Waiting for signature...';
+
+        // 2. Sign message with wallet
+        const signature = await signer.signMessage(challengeData.message);
+
+        // 3. Show result - signature is the credential
+        showSuccess(signature);
+
+      } catch (err) {
+        console.error('Sign error:', err);
+        if (err.code === 4001 || err.code === 'ACTION_REJECTED' || err.message?.includes('rejected')) {
+          showError('Signature rejected. Please approve the signature in your wallet.');
+        } else {
+          showError(err.message || 'Failed to sign message');
+        }
+      } finally {
+        signBtn.disabled = false;
+        signBtn.innerHTML = 'Sign Message';
+        updateSignButton();
+      }
+    }
+
+    function showSuccess(credential) {
+      resultBox.className = 'result-box success show';
+      resultTitle.textContent = 'Credential Generated';
+      resultContent.innerHTML = `
+        <p>Use this as your git password (or username) when pushing:</p>
+        <div class="result-credential">
+          <button class="copy-btn" onclick="copyCredential()">Copy</button>
+          <div class="result-credential-label">Git Password</div>
+          <div class="result-credential-value" id="credential-value">${credential}</div>
+        </div>
+        <div class="expiry-note" style="color: #059669;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Persistent — use this signature for all future pushes to this repo
+        </div>
+      `;
+    }
+
+    function showError(message) {
+      resultBox.className = 'result-box error show';
+      resultTitle.textContent = 'Error';
+      resultContent.innerHTML = `<p>${message}</p>`;
+    }
+
+    // Copy credential to clipboard
+    window.copyCredential = async function() {
+      const value = document.getElementById('credential-value').textContent;
+      try {
+        await navigator.clipboard.writeText(value);
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        console.error('Copy failed:', err);
+      }
+    };
+
+    // Listen for wallet account changes
+    if (hasBrowserWallet()) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length > 0) {
+          connectedAddress = accounts[0];
+          provider = new BrowserProvider(window.ethereum);
+          provider.getSigner().then(s => { signer = s; });
+        } else {
+          disconnect();
+        }
+        updateUI();
+      });
+
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      });
+
+      // Check if already connected
+      window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+        if (accounts.length > 0) {
+          connectedAddress = accounts[0];
+          provider = new BrowserProvider(window.ethereum);
+          provider.getSigner().then(s => { signer = s; });
+          updateUI();
+        }
+      }).catch(console.error);
+    }
+
+    // Event listeners
+    repoInput.addEventListener('input', updateSignButton);
+    addressInput.addEventListener('input', updateSignButton);
+    signBtn.addEventListener('click', signMessage);
+
+    // Initial UI
+    updateUI();
+  </script>
+</body>
+</html>

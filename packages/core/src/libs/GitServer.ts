@@ -1,8 +1,9 @@
 import bunyan from "bunyan";
 import { createReadStream } from "fs";
+import { rm } from "fs/promises";
 import path from "path";
 import { c as tarCreate, x as tarExtract } from "tar";
-import { Git, FetchData, PushData } from "node-git-server";
+import { Git, FetchData, PushData, GitAuthenticateOptions } from "node-git-server";
 import Aws from "./Aws";
 import {
   createRepo,
@@ -10,6 +11,11 @@ import {
   updateRepo,
 } from "../database/models/repos";
 import { IFactoryOptions } from "../factory";
+import {
+  verifySignature,
+  parseAuthCredential,
+  generateNonce,
+} from "./SignatureAuth";
 
 const aws = Aws();
 
@@ -46,21 +52,81 @@ export default function GitServer(
       const filePath = path.join(rootDir, address);
       const repos = new Git(filePath, {
         autoCreate: true,
-        // authenticate: ({ type, user /*, repo, headers */ }, next) =>
-        //   // NOTE: don't need to auth as address/username is in route of
-        //   // endpoint the user is pushing to and does not need to be hidden
-        //   type == "push"
-        //     ? user((address /*, password */) => {
-        //         if (!isAddress(address)) {
-        //           return next(new Error(`address must be valid EVM address`));
-        //         }
-        //         next();
-        //       })
-        //     : next(),
+        // Note: node-git-server handles async authenticate functions by calling
+        // promise.then(next).catch(next), so we should NOT call next() manually.
+        // Just return for success, or throw an error for rejection.
+        authenticate: async ({ type, repo, user }: GitAuthenticateOptions) => {
+          // Only authenticate pushes, allow fetches without auth
+          if (type !== "push") {
+            return;
+          }
+
+          // Check if repo exists in DB - if not, allow the push (first claim)
+          const repoName = repo.endsWith(".git") ? repo : `${repo}.git`;
+          const existingRepo = await findRepoByAddressAndName(address, repoName);
+
+          if (!existingRepo) {
+            // New repo - anyone can claim it
+            log.debug(
+              `New repo ${address}/${repoName}, allowing unauthenticated push`
+            );
+            return;
+          }
+
+          // Existing repo - require signature authentication
+          // Get both username and password - credential can be in either field
+          const [username, password] = await user();
+
+          // Try to parse credential from password first, then username
+          // This allows users to put the credential in either field
+          let parsed = password ? parseAuthCredential(password) : null;
+          if (!parsed && username) {
+            parsed = parseAuthCredential(username);
+          }
+
+          if (!parsed) {
+            log.warn(
+              `Push to ${address}/${repoName} rejected: no valid credentials provided`
+            );
+            throw new Error(
+              "Authentication required. Use signature as username or password. " +
+                "See /auth/docs for details."
+            );
+          }
+
+          // Verify the signature
+          const { signature } = parsed;
+          const result = verifySignature(
+            signature,
+            address,
+            repoName,
+            existingRepo.auth_nonce
+          );
+
+          if (!result.valid) {
+            log.warn(`Push to ${address}/${repoName} rejected: ${result.error}`);
+            throw new Error(result.error || "Invalid signature");
+          }
+
+          // Signature is valid - no nonce increment, signature can be reused
+          log.info(`Authenticated push to ${address}/${repoName}`);
+        },
       });
 
       // handle git pushes
-      repos.on("push", function onPush(push: PushData) {
+      repos.on("push", async function onPush(push: PushData) {
+        // Clean up stale working directory for new repos
+        // (used by /view route). Don't clean up bare repo - git server needs it for the push.
+        const repoNameClean = push.repo.replace(/\.git$/, "");
+        const workingDirPath = path.join(filePath, `${repoNameClean}-working`);
+
+        try {
+          await rm(workingDirPath, { recursive: true, force: true });
+          log.debug(`Cleaned up working dir: ${workingDirPath}`);
+        } catch {
+          // Ignore errors - directory may not exist
+        }
+
         push.accept();
         push.res.on("finish", async (): Promise<void> => {
           try {
@@ -78,14 +144,16 @@ export default function GitServer(
               filename: `${address}/${tarballName}`,
               data: createReadStream(fullFilePath),
             });
-            const existingRepo = await findRepoByAddressAndName(
+
+            // Re-check DB in case repo was created between push start and finish
+            const repoInDb = await findRepoByAddressAndName(
               address,
               push.repo
             );
 
             // write to DB
-            if (existingRepo) {
-              await updateRepo(existingRepo.id, {
+            if (repoInDb) {
+              await updateRepo(repoInDb.id, {
                 internal_name: internalFilename,
               });
             } else {
@@ -93,6 +161,7 @@ export default function GitServer(
                 address: address,
                 internal_name: internalFilename,
                 name: push.repo,
+                auth_nonce: generateNonce(),
               });
             }
 

@@ -68,7 +68,7 @@
 
     /* Header */
     header {
-      padding: 80px 0 60px;
+      padding: 48px 0 36px;
       border-bottom: 1px solid var(--border);
     }
 
@@ -109,7 +109,7 @@
 
     /* Section */
     section {
-      padding: 56px 0;
+      padding: 36px 0;
       border-bottom: 1px solid var(--border);
     }
 
@@ -430,6 +430,14 @@
       background: var(--bg);
     }
 
+    .pushes-table tr.clickable-row {
+      cursor: pointer;
+    }
+
+    .pushes-table tr.clickable-row:hover td {
+      background: #f0f0ee;
+    }
+
     .col-repo { width: 35%; }
     .col-address { width: 25%; }
     .col-branch { width: 20%; }
@@ -438,19 +446,14 @@
 
     .pushes-table th.col-time { text-align: right; }
 
-    .repo-link {
-      text-decoration: none;
-      color: var(--text-primary);
-      font-weight: 500;
-      transition: color 0.15s ease;
-    }
-
-    .repo-link:hover {
-      color: #2c5282;
-    }
-
     .repo-name {
       display: inline-block;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .clickable-row:hover .repo-name {
+      color: #2c5282;
     }
 
     .address {
@@ -514,6 +517,110 @@
       color: var(--text-tertiary);
     }
 
+    /* Auth Callout */
+    .auth-callout {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 16px;
+      padding: 32px;
+      color: white;
+    }
+
+    .auth-callout-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .auth-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .auth-icon svg {
+      stroke: #a8d4a8;
+    }
+
+    .auth-callout-title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .auth-callout-content p {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .auth-steps {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .auth-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .auth-step-num {
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .auth-step a {
+      color: #8cb4d4;
+      text-decoration: none;
+    }
+
+    .auth-step a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      color: #1a1a1a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 14px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .auth-cta:hover {
+      background: #f0f0f0;
+      transform: translateY(-1px);
+    }
+
+    .auth-cta svg {
+      stroke: #1a1a1a;
+    }
+
     /* Responsive */
     @media (max-width: 640px) {
       .container {
@@ -572,6 +679,25 @@
       .col-repo { width: 40%; }
       .col-address { width: 35%; }
       .col-time { width: 25%; }
+
+      .auth-callout {
+        padding: 24px;
+      }
+
+      .auth-callout-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .auth-callout-title {
+        font-size: 18px;
+      }
+
+      .auth-cta {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -620,10 +746,6 @@
               <strong>REPO_NAME</strong> — Any repository name you choose
             </div>
           </div>
-        </div>
-        <div class="note">
-          <div class="note-title">About the address</div>
-          <p>Any valid EVM address can be used — the server does not authenticate ownership. However, we recommend using your own wallet address, as future integrations (powered by x402) will use the address in the URL to determine where funds are sent.</p>
         </div>
       </div>
     </section>
@@ -688,6 +810,44 @@
 <span class="cmd">git pull</span> grep3 main</code>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Repository Authentication</div>
+      <div class="auth-callout">
+        <div class="auth-callout-header">
+          <div class="auth-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div class="auth-callout-title">Protect your repositories with signature authentication</div>
+        </div>
+        <div class="auth-callout-content">
+          <p>Once you've pushed to a repository, it's claimed under your address. Future pushes require you to prove ownership by signing a message with your Ethereum wallet.</p>
+          <div class="auth-steps">
+            <div class="auth-step">
+              <span class="auth-step-num">1</span>
+              <span>First push claims the repository (no auth needed)</span>
+            </div>
+            <div class="auth-step">
+              <span class="auth-step-num">2</span>
+              <span>Subsequent pushes require a signed credential</span>
+            </div>
+            <div class="auth-step">
+              <span class="auth-step-num">3</span>
+              <span>Generate credentials using your wallet at <a href="/auth/docs">/auth/docs</a></span>
+            </div>
+          </div>
+          <a href="/auth/docs" class="auth-cta">
+            <span>Generate Push Credentials</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
         </div>
       </div>
     </section>

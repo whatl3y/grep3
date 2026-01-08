@@ -1,47 +1,115 @@
 import path from "path";
 import { Request, Response } from "express";
 import { getAddress, isAddress } from "ethers";
-import { mkdir, readFile, readdir, stat } from "fs/promises";
-import { GitClient, defaultRootDir, FileManagement } from "@grep3/core";
+import { mkdir, readFile, readdir, stat, rm } from "fs/promises";
+import { GitClient, FileManagement, untarRepoFromAws } from "@grep3/core";
+import config from "../config";
 import { IRoute } from "./index";
 import log from "../logger";
 
 const fileMgmt = FileManagement();
 
 // File browser utilities
-const TEXT_EXTENSIONS = new Set([
-  ".txt", ".md", ".markdown", ".json", ".js", ".ts", ".jsx", ".tsx", ".css", ".scss", ".sass", ".less",
-  ".html", ".htm", ".xml", ".svg", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".conf", ".env",
-  ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd",
-  ".py", ".rb", ".php", ".java", ".c", ".cpp", ".h", ".hpp", ".cs", ".go", ".rs", ".swift", ".kt", ".scala",
-  ".sql", ".graphql", ".prisma", ".vue", ".svelte", ".astro",
-  ".gitignore", ".gitattributes", ".editorconfig", ".prettierrc", ".eslintrc", ".babelrc",
-  ".dockerfile", ".makefile", ".gradle", ".lock", ".log",
-]);
+const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp"]);
 
-const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp", ".svg"]);
-
-function getFileType(filename: string): "text" | "image" | "binary" {
+// SVG is technically XML text, so we handle it specially
+function isImageExtension(filename: string): boolean {
   const ext = path.extname(filename).toLowerCase();
-  if (IMAGE_EXTENSIONS.has(ext)) return "image";
-  if (TEXT_EXTENSIONS.has(ext) || !ext) return "text";
-  return "binary";
+  return IMAGE_EXTENSIONS.has(ext);
+}
+
+function isSvgFile(filename: string): boolean {
+  return path.extname(filename).toLowerCase() === ".svg";
+}
+
+/**
+ * Check if a buffer contains valid UTF-8 text content.
+ * Returns true if the content appears to be readable text.
+ */
+function isTextContent(buffer: Buffer): boolean {
+  // Empty files are considered text
+  if (buffer.length === 0) return true;
+
+  // Check a sample of the file (first 8KB should be enough)
+  const sampleSize = Math.min(buffer.length, 8192);
+  const sample = buffer.subarray(0, sampleSize);
+
+  // Check for null bytes - binary files often have these
+  // Text files almost never do (except for UTF-16/32 which we're not supporting here)
+  let nullCount = 0;
+  let controlCount = 0;
+
+  for (let i = 0; i < sample.length; i++) {
+    const byte = sample[i];
+
+    // Null byte is a strong indicator of binary
+    if (byte === 0) {
+      nullCount++;
+      // If we find more than a couple null bytes, it's likely binary
+      if (nullCount > 2) return false;
+    }
+
+    // Count control characters (except common whitespace: tab, newline, carriage return)
+    if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
+      controlCount++;
+    }
+  }
+
+  // If more than 10% of the sample is control characters, likely binary
+  if (controlCount > sampleSize * 0.1) return false;
+
+  // Try to decode as UTF-8 and check for replacement characters
+  try {
+    const decoded = sample.toString("utf-8");
+    // Count replacement characters (U+FFFD) which indicate invalid UTF-8 sequences
+    const replacementCount = (decoded.match(/\uFFFD/g) || []).length;
+    // If more than 1% are replacement characters, probably not valid UTF-8 text
+    if (replacementCount > decoded.length * 0.01) return false;
+  } catch {
+    return false;
+  }
+
+  return true;
 }
 
 function getLanguageFromFilename(filename: string): string {
   const ext = path.extname(filename).toLowerCase();
+  const basename = path.basename(filename).toLowerCase();
+
+  // Handle files without extensions by basename
+  const basenameMap: { [key: string]: string } = {
+    "dockerfile": "dockerfile",
+    "makefile": "makefile",
+    ".gitignore": "gitignore",
+    ".gitattributes": "gitignore",
+    ".editorconfig": "ini",
+    ".prettierrc": "json",
+    ".eslintrc": "json",
+    ".babelrc": "json",
+  };
+
+  if (basenameMap[basename]) {
+    return basenameMap[basename];
+  }
+
   const langMap: { [key: string]: string } = {
-    ".js": "javascript", ".jsx": "javascript", ".ts": "typescript", ".tsx": "typescript",
+    ".js": "javascript", ".jsx": "javascript", ".mjs": "javascript", ".cjs": "javascript",
+    ".ts": "typescript", ".tsx": "typescript", ".mts": "typescript", ".cts": "typescript",
     ".py": "python", ".rb": "ruby", ".php": "php", ".java": "java",
     ".c": "c", ".cpp": "cpp", ".h": "c", ".hpp": "cpp", ".cs": "csharp",
     ".go": "go", ".rs": "rust", ".swift": "swift", ".kt": "kotlin", ".scala": "scala",
+    ".sol": "solidity",
     ".html": "html", ".htm": "html", ".xml": "xml", ".svg": "xml",
     ".css": "css", ".scss": "scss", ".sass": "sass", ".less": "less",
     ".json": "json", ".yaml": "yaml", ".yml": "yaml", ".toml": "toml",
     ".md": "markdown", ".markdown": "markdown",
     ".sh": "bash", ".bash": "bash", ".zsh": "bash",
-    ".sql": "sql", ".graphql": "graphql",
+    ".sql": "sql", ".graphql": "graphql", ".gql": "graphql",
     ".dockerfile": "dockerfile", ".makefile": "makefile",
+    ".vue": "vue", ".svelte": "svelte",
+    ".prisma": "prisma",
+    ".env": "properties",
+    ".ini": "ini", ".cfg": "ini", ".conf": "ini",
   };
   return langMap[ext] || "plaintext";
 }
@@ -220,6 +288,20 @@ function getMimeType(filename: string): string {
   return mimeTypes[ext] || "image/jpeg";
 }
 
+/**
+ * Check if a working directory has actual git content (not just empty or .git only)
+ */
+async function isWorkingDirPopulated(workingDir: string): Promise<boolean> {
+  try {
+    const entries = await readdir(workingDir);
+    // Filter out .git directory - we want to see if there are actual files
+    const nonGitEntries = entries.filter((e) => e !== ".git");
+    return nonGitEntries.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 // Main file browser handler - shared logic for both routes
 async function handleViewRepo(req: Request, res: Response, filePath: string) {
   try {
@@ -234,17 +316,63 @@ async function handleViewRepo(req: Request, res: Response, filePath: string) {
     // Working directory for cloned repos (separate from bare repos)
     const repoNameClean = repo.replace(/\.git$/, "");
     const repoName = `${repoNameClean}.git`;
-    const workingDir = path.join(defaultRootDir, checksumAddress, `${repoNameClean}-working`);
+    const workingDir = path.join(config.gitRootDir, checksumAddress, `${repoNameClean}-working`);
+    const bareRepoDir = path.join(config.gitRootDir, checksumAddress, repoName);
 
-    // Clone/pull the repo if needed
-    if (!(await fileMgmt.doesDirOrFileExist(workingDir))) {
+    // Check if working directory exists AND has content
+    const workingDirExists = await fileMgmt.doesDirOrFileExist(workingDir);
+    const workingDirPopulated = workingDirExists && (await isWorkingDirPopulated(workingDir));
+
+    // Ensure the bare repo exists first (fetch from AWS if needed for ephemeral filesystems)
+    const bareRepoExists = await fileMgmt.doesDirOrFileExist(bareRepoDir);
+    if (!bareRepoExists) {
+      // Ensure parent directory exists
+      const userDir = path.join(config.gitRootDir, checksumAddress);
+      if (!(await fileMgmt.doesDirOrFileExist(userDir))) {
+        await mkdir(userDir, { recursive: true });
+      }
+
+      // Try to fetch bare repo from AWS (this checks DB first)
+      const fetchedFromAws = await untarRepoFromAws(log, config.gitRootDir, checksumAddress, repoName);
+      if (!fetchedFromAws) {
+        log.info("Repository not found in DB/AWS", checksumAddress, repoName);
+        return res.status(404).send("Repository not found");
+      }
+      log.info("Fetched bare repo from AWS", checksumAddress, repoName);
+    }
+
+    if (!workingDirPopulated) {
+      // Clean up empty/broken working directory if it exists
+      if (workingDirExists && !workingDirPopulated) {
+        log.info("Removing empty working directory", workingDir);
+        await rm(workingDir, { recursive: true, force: true });
+      }
+
+      // Create fresh working directory and clone
       await mkdir(workingDir, { recursive: true });
       const gitClient = GitClient(checksumAddress, repoName, workingDir);
       try {
         await gitClient.pullRepo();
       } catch (err) {
         log.error("Failed to clone repo", err);
-        return res.status(404).send("Repository not found");
+        // Clean up failed working directory
+        await rm(workingDir, { recursive: true, force: true }).catch(() => {});
+        return res.status(404).send("Repository not found or empty");
+      }
+
+      // Verify we actually got content
+      if (!(await isWorkingDirPopulated(workingDir))) {
+        log.error("Working directory still empty after pull", workingDir);
+        return res.status(404).send("Repository appears to be empty");
+      }
+    } else {
+      // Working directory exists - pull latest changes to ensure we have the most recent commit
+      const gitClient = GitClient(checksumAddress, repoName, workingDir);
+      try {
+        await gitClient.pullRepo();
+      } catch (err) {
+        // Log but don't fail - we can still show the existing content
+        log.warn("Failed to pull latest changes, showing cached content", err);
       }
     }
 
@@ -280,21 +408,29 @@ async function handleViewRepo(req: Request, res: Response, filePath: string) {
       if (stats.isFile()) {
         // It's a file - show file contents
         const filename = path.basename(filePath);
-        const fileType = getFileType(filename);
         const fileSize = stats.size;
 
         try {
-          if (fileType === "image") {
-            const fileContent = await readFile(targetPath);
-            const base64Content = fileContent.toString("base64");
+          // Read file as buffer first to determine type
+          const fileBuffer = await readFile(targetPath);
+
+          if (isImageExtension(filename)) {
+            // Known image extension - display as image
+            const base64Content = fileBuffer.toString("base64");
             const mimeType = getMimeType(filename);
             contentHtml = renderImageViewer(filename, fileSize, mimeType, base64Content);
-          } else if (fileType === "binary") {
-            contentHtml = renderBinaryViewer(filename, fileSize);
-          } else {
-            const fileContent = await readFile(targetPath, "utf-8");
+          } else if (isSvgFile(filename)) {
+            // SVG is XML text, show as code
+            const fileContent = fileBuffer.toString("utf-8");
+            contentHtml = renderCodeViewer(filename, fileSize, "xml", fileContent);
+          } else if (isTextContent(fileBuffer)) {
+            // Content-based detection determined this is text
+            const fileContent = fileBuffer.toString("utf-8");
             const language = getLanguageFromFilename(filename);
             contentHtml = renderCodeViewer(filename, fileSize, language, fileContent);
+          } else {
+            // Binary file
+            contentHtml = renderBinaryViewer(filename, fileSize);
           }
         } catch {
           contentHtml = renderErrorState("Unable to read file", "This file could not be read from the repository.");

@@ -53,4 +53,4 @@ RUN pnpm --filter=./apps/remix build
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 RUN chmod +x /wait
 
-CMD /wait && pnpm --filter=./apps/remix start
+CMD ["sh", "-c", "/wait && pnpm --filter=./apps/remix start"]

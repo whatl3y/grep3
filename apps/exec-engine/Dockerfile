@@ -57,4 +57,4 @@ ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait
 RUN chmod +x /wait
 
 # Wait for dependencies, run migrations, then start server
-CMD /wait && node dist/tasks/migrate.js && node dist/webServer.js
+CMD ["sh", "-c", "/wait && node dist/tasks/migrate.js && node dist/webServer.js"]

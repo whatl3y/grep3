@@ -46,12 +46,12 @@ function generateRecentPushesHtml(
 
   const rows = pushes
     .map(
-      (push) => `
-      <tr>
+      (push) => {
+        const viewUrl = `/view/${push.address}/${push.repo.replace(/\.git$/, "")}`;
+        return `
+      <tr class="clickable-row" onclick="window.location='${viewUrl}'">
         <td class="col-repo">
-          <a href="/view/${push.address}/${push.repo.replace(/\.git$/, "")}" class="repo-link">
-            <span class="repo-name">${push.repo.replace(/\.git$/, "")}</span>
-          </a>
+          <span class="repo-name">${push.repo.replace(/\.git$/, "")}</span>
         </td>
         <td class="col-address">
           <span class="address" title="${push.address}">${truncateAddress(push.address)}</span>
@@ -59,7 +59,8 @@ function generateRecentPushesHtml(
         <td class="col-branch">${push.branch}</td>
         <td class="col-time">${formatTimestamp(push.timestamp)}</td>
       </tr>
-    `
+    `;
+      }
     )
     .join("");
 

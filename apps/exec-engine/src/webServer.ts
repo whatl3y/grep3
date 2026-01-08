@@ -7,7 +7,6 @@ import { Git } from "node-git-server";
 import {
   GitServer,
   untarRepoFromAws,
-  defaultRootDir,
   FileManagement,
   db,
   IFactoryOptions,
@@ -35,6 +34,7 @@ dotenv.config({ quiet: true });
 
     // git servers per username (username must be a valid Ethereum address)
     const gitServer = GitServer(injectArgs, {
+      rootDir: config.gitRootDir,
       onPush: async (event) => {
         await recentPushes.addPush(event);
       },
@@ -64,20 +64,43 @@ dotenv.config({ quiet: true });
               const isGitFetch = service === "git-upload-pack"; // git fetch, pull, clone
               const isGitPush = service === "git-receive-pack"; // git push
 
-              const cwd = path.join(defaultRootDir, username);
+              const cwd = path.join(config.gitRootDir, username);
               if (!(await fileMgmt.doesDirOrFileExist(cwd))) {
                 await mkdir(cwd, { recursive: true });
               }
               const repoFilepath = path.join(cwd, repo);
-              const repoExistsLocally = await fileMgmt.doesDirOrFileExist(
+              let repoExistsLocally = await fileMgmt.doesDirOrFileExist(
                 repoFilepath
               );
+
+              // Check if the repo directory exists but is empty/incomplete (ephemeral filesystem issue)
+              if (repoExistsLocally) {
+                try {
+                  const repoContents = await fileMgmt.readDir(repoFilepath);
+                  // A valid bare git repo should have at least HEAD, objects, refs
+                  const hasRequiredFiles =
+                    repoContents.includes("HEAD") &&
+                    repoContents.includes("objects") &&
+                    repoContents.includes("refs");
+                  if (!hasRequiredFiles) {
+                    log.info(
+                      "Bare repo exists but appears incomplete, will re-fetch from AWS",
+                      username,
+                      repo
+                    );
+                    repoExistsLocally = false;
+                  }
+                } catch {
+                  // If we can't read the directory, treat as non-existent
+                  repoExistsLocally = false;
+                }
+              }
 
               if (!repoExistsLocally) {
                 // Try to pull repo from S3
                 const success = await untarRepoFromAws(
                   log,
-                  defaultRootDir,
+                  config.gitRootDir,
                   username,
                   repo
                 );

@@ -37,6 +37,14 @@ export {
 } from "./libs/GitServer";
 export type { PushEvent, GitServerOptions } from "./libs/GitServer";
 export { default as Markdown } from "./libs/Markdown";
+export {
+  createAuthMessage,
+  createChallenge,
+  verifySignature,
+  parseAuthCredential,
+  generateNonce,
+} from "./libs/SignatureAuth";
+export type { AuthChallenge, SignatureAuthOptions } from "./libs/SignatureAuth";
 export * from "./libs/Utils";
 
 // Executors

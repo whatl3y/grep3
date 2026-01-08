@@ -18,6 +18,8 @@ export interface RepoTable {
   address: string;
   internal_name: string;
   name: string;
+  /** Nonce for signature-based authentication. Incremented after each authenticated push. */
+  auth_nonce: ColumnType<number, number | undefined, number>;
   created_at: ColumnType<Date, string | undefined, never>;
 }
 
