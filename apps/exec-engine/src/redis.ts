@@ -1,5 +1,6 @@
 import assert from "assert";
-import { Redis } from "ioredis";
+import { createRedisClient } from "@grep3/core";
 
 assert(process.env.REDIS_URL, "redis connection string required");
-export default new Redis(process.env.REDIS_URL);
+
+export default createRedisClient(process.env.REDIS_URL);

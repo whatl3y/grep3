@@ -8,6 +8,6 @@ export default {
 
   server: {
     host: process.env.HOST || "http://localhost:8000",
-    port: process.env.PORT || 8000,
+    port: parseInt(process.env.PORT || "8000", 10),
   },
 };

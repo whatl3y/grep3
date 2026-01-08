@@ -27,13 +27,31 @@ dotenv.config({ quiet: true });
 
     const injectArgs: IFactoryOptions = { db, log, redis };
 
-    // git servers per username
+    // present setup guide on home page (must be before /:username catch-all)
+    app.get("/", async (_, res) => {
+      try {
+        const html = await readFile(
+          path.join(__dirname, "templates", "index.html"),
+          "utf-8"
+        );
+        res.type("html").send(html);
+      } catch (err: any) {
+        res.status(500).send(err.stack);
+      }
+    });
+
+    // Handle favicon and other common browser requests
+    app.get("/favicon.ico", (_, res) => res.status(204).end());
+    app.get("/robots.txt", (_, res) => res.type("text").send("User-agent: *\nDisallow:"));
+
+    // git servers per username (username must be a valid Ethereum address)
     const gitServer = GitServer(injectArgs);
     let userGitServers: { [username: string]: Git } = {};
     app.use("/:username", async (req, res) => {
       try {
+        // Only handle requests where username is a valid Ethereum address
         if (!isAddress(req.params.username)) {
-          throw new Error("invalid address");
+          return res.status(404).send("Not found");
         }
         const username = getAddress(req.params.username);
         userGitServers[username] =
@@ -101,19 +119,6 @@ dotenv.config({ quiet: true });
       } catch (err: any) {
         log.error(`outer git/username error`, err);
         res.status(500).send(err.message);
-      }
-    });
-
-    // present setup guide on home page
-    app.get("/", async (_, res) => {
-      try {
-        const html = await readFile(
-          path.join(__dirname, "templates", "index.html"),
-          "utf-8"
-        );
-        res.type("html").send(html);
-      } catch (err: any) {
-        res.status(500).send(err.stack);
       }
     });
 

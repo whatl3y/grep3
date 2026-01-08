@@ -9,6 +9,7 @@ import {
   FileMigrationProvider,
 } from "kysely";
 import { Database } from "./database/types";
+import { getPoolConfig } from "./database/database";
 
 export interface MigrateOptions {
   databaseUrl: string;
@@ -21,9 +22,7 @@ export async function migrateToLatest(options: MigrateOptions): Promise<void> {
 
   const db = new Kysely<Database>({
     dialect: new PostgresDialect({
-      pool: new Pool({
-        connectionString: databaseUrl,
-      }),
+      pool: new Pool(getPoolConfig(databaseUrl)),
     }),
   });
 

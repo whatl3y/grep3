@@ -5,7 +5,7 @@ export { default as config } from "./config";
 export * from "./factory";
 
 // Database
-export { db } from "./database/database";
+export { db, getPoolConfig } from "./database/database";
 export * from "./database/types";
 export { migrateToLatest } from "./migrate";
 
@@ -14,6 +14,9 @@ export * from "./database/models/repos";
 export * from "./database/models/executions";
 export * from "./database/models/merkletrees";
 export * from "./database/models/merkletreeValues";
+
+// Redis
+export { createRedisClient, getRedisOptions } from "./redis";
 
 // Libraries
 export { default as Aws } from "./libs/Aws";
