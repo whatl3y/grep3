@@ -22,86 +22,84 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=grep3
 
-  exec-engine-web:
+  git-web:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/exec-engine/Dockerfile
+      dockerfile: ./apps/git/Dockerfile
     depends_on:
       - postgres
       - redis
-      - docker
     ports:
       - "8000:8000"
     env_file:
-      - ./apps/exec-engine/.env
+      - ./apps/git/.env
     environment:
       - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
-      - DOCKER_HOST=http://docker:2375
-      - HOST=http://exec-engine-web:8000
+      - HOST=http://git-web:8000
       - PORT=8000
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/exec-engine/dist:/app/dist
-      - ./apps/exec-engine/templates:/app/templates
+      - ./apps/git/dist:/app/dist
+      - ./apps/git/templates:/app/templates
 
-  exec-engine-workers:
+  execution-engine-web:
     restart: always
     build:
       context: .
-      dockerfile: ./apps/exec-engine/Dockerfile.worker
-    depends_on:
-      - postgres
-      - redis
-      - docker
-    env_file:
-      - ./apps/exec-engine/.env
-    environment:
-      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
-      - DOCKER_HOST=http://docker:2375
-      - HOST=http://exec-engine-web:8000
-      - REDIS_URL=redis://redis:6379
-      - WAIT_HOSTS=postgres:5432,redis:6379
-    volumes:
-      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
-
-  exec-engine-scheduler:
-    restart: always
-    build:
-      context: .
-      dockerfile: ./apps/exec-engine/Dockerfile.scheduler
-    depends_on:
-      - redis
-    env_file:
-      - ./apps/exec-engine/.env
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - WAIT_HOSTS=redis:6379
-    volumes:
-      - ./apps/exec-engine/dist:/usr/grep3/apps/exec-engine/dist
-
-  exec-api:
-    restart: always
-    build:
-      context: .
-      dockerfile: ./apps/exec-api/Dockerfile
+      dockerfile: ./apps/execution-engine/Dockerfile
     depends_on:
       - postgres
       - redis
     ports:
       - "8080:8080"
     env_file:
-      - ./apps/exec-api/.env
+      - ./apps/execution-engine/.env
     environment:
       - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
       - DOCKER_HOST=http://docker:2375
-      - HOST=http://exec-api:8080
+      - HOST=http://execution-engine-web:8080
       - PORT=8080
       - REDIS_URL=redis://redis:6379
       - WAIT_HOSTS=postgres:5432,redis:6379
     volumes:
-      - ./apps/exec-api/dist:/usr/grep3/apps/exec-api/dist
+      - ./apps/execution-engine/dist:/usr/grep3/apps/execution-engine/dist
+
+  execution-engine-workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/execution-engine/Dockerfile.worker
+    depends_on:
+      - postgres
+      - redis
+      - docker
+    env_file:
+      - ./apps/execution-engine/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - DOCKER_HOST=http://docker:2375
+      - HOST=http://execution-engine-web:8080
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/execution-engine/dist:/usr/grep3/apps/execution-engine/dist
+
+  execution-engine-scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/execution-engine/Dockerfile.scheduler
+    depends_on:
+      - redis
+    env_file:
+      - ./apps/execution-engine/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/execution-engine/dist:/usr/grep3/apps/execution-engine/dist
 
   tornado-api:
     restart: always

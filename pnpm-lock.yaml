@@ -118,7 +118,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/exec-api:
+  apps/execution-engine:
     dependencies:
       '@grep3/core':
         specifier: workspace:*
@@ -138,6 +138,21 @@ importers:
       ioredis:
         specifier: ^5.8.2
         version: 5.8.2
+      kysely:
+        specifier: ^0.28.8
+        version: 0.28.9
+      minimist:
+        specifier: ^1.2.8
+        version: 1.2.8
+      node-resque:
+        specifier: ^9.3.8
+        version: 9.3.8
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
+      tar-fs:
+        specifier: ^3.1.1
+        version: 3.1.1
     devDependencies:
       '@types/bunyan':
         specifier: ^1.8.11
@@ -176,7 +191,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/exec-engine:
+  apps/git:
     dependencies:
       '@grep3/core':
         specifier: workspace:*
@@ -199,37 +214,19 @@ importers:
       kysely:
         specifier: ^0.28.8
         version: 0.28.9
-      minimist:
-        specifier: ^1.2.8
-        version: 1.2.8
       node-git-server:
         specifier: ^1.0.0
         version: 1.0.0
-      node-resque:
-        specifier: ^9.3.8
-        version: 9.3.8
       pg:
         specifier: ^8.16.3
         version: 8.16.3
-      tar-fs:
-        specifier: ^3.1.1
-        version: 3.1.1
     devDependencies:
       '@types/bunyan':
         specifier: ^1.8.11
         version: 1.8.11
-      '@types/dockerode':
-        specifier: ^3.3.47
-        version: 3.3.47
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
-      '@types/markdown-it':
-        specifier: ^14.1.2
-        version: 14.1.2
-      '@types/minimist':
-        specifier: ^1.2.5
-        version: 1.2.5
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -239,9 +236,6 @@ importers:
       '@types/pg':
         specifier: ^8.15.6
         version: 8.16.0
-      '@types/tar-fs':
-        specifier: ^2.0.4
-        version: 2.0.4
       mocha:
         specifier: ^11.7.5
         version: 11.7.5

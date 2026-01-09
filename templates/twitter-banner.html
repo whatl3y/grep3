@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grep3 Twitter Banner</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .banner-container {
+      width: 1500px;
+      height: 500px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Sophisticated grid pattern */
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Accent grid overlay */
+    .accent-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px);
+      background-size: 300px 300px;
+    }
+
+    /* Floating geometric elements */
+    .geo-element {
+      position: absolute;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 2px;
+    }
+
+    .geo-1 {
+      width: 400px;
+      height: 400px;
+      top: -150px;
+      right: 200px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, rgba(0,0,0,0.02) 0%, transparent 100%);
+    }
+
+    .geo-2 {
+      width: 200px;
+      height: 200px;
+      bottom: -50px;
+      left: 100px;
+      transform: rotate(15deg);
+      background: linear-gradient(45deg, rgba(0,0,0,0.015) 0%, transparent 100%);
+    }
+
+    .geo-3 {
+      width: 120px;
+      height: 120px;
+      top: 80px;
+      right: 80px;
+      background: rgba(0,0,0,0.02);
+    }
+
+    /* Subtle noise texture */
+    .noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.4;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+      mix-blend-mode: multiply;
+    }
+
+    /* Main content layout */
+    .content {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      padding: 50px 80px;
+    }
+
+    /* Left section - branding */
+    .brand-section {
+      flex: 0 0 480px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-mark {
+      width: 52px;
+      height: 52px;
+      background: #0a0a0a;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .logo-mark::before {
+      content: '>';
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-left: 2px;
+    }
+
+    .logo-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 56px;
+      font-weight: 700;
+      color: #0a0a0a;
+      letter-spacing: -2px;
+    }
+
+    .tagline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: #525252;
+      letter-spacing: 0.5px;
+      margin-bottom: 32px;
+    }
+
+    .tagline-accent {
+      display: inline-block;
+      background: linear-gradient(90deg, #0a0a0a 0%, #404040 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 500;
+    }
+
+    .sub-tagline {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Right section - services */
+    .services-section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 20px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 16px;
+      width: 800px;
+    }
+
+    .service-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #0a0a0a 0%, #404040 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .service-icon {
+      width: 36px;
+      height: 36px;
+      background: #0a0a0a;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .service-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0a0a0a;
+      letter-spacing: -0.3px;
+    }
+
+    .service-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    /* Decorative elements */
+    .corner-accent {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border: 2px solid rgba(0,0,0,0.08);
+    }
+
+    .corner-accent.top-left {
+      top: 30px;
+      left: 30px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .corner-accent.bottom-right {
+      bottom: 30px;
+      right: 30px;
+      border-left: none;
+      border-top: none;
+    }
+
+    /* Vertical text accent */
+    .vertical-text {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: rgba(0,0,0,0.15);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Dot pattern accent */
+    .dots-pattern {
+      position: absolute;
+      bottom: 40px;
+      left: 80px;
+      display: grid;
+      grid-template-columns: repeat(5, 6px);
+      gap: 8px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 50%;
+    }
+
+    .dot:nth-child(1), .dot:nth-child(3), .dot:nth-child(5) {
+      background: rgba(0,0,0,0.2);
+    }
+
+    /* Line accents */
+    .line-accent {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+    }
+
+    .line-accent-1 {
+      width: 200px;
+      top: 100px;
+      left: 500px;
+    }
+
+    .line-accent-2 {
+      width: 150px;
+      bottom: 120px;
+      left: 450px;
+    }
+
+    /* Circle decoration */
+    .circle-deco {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: 50%;
+      left: 350px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .circle-deco-inner {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border: 1px solid rgba(0,0,0,0.03);
+      border-radius: 50%;
+      left: 400px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="banner-container">
+    <!-- Background layers -->
+    <div class="grid-pattern"></div>
+    <div class="accent-grid"></div>
+    <div class="noise"></div>
+
+    <!-- Geometric elements -->
+    <div class="geo-element geo-1"></div>
+    <div class="geo-element geo-2"></div>
+    <div class="geo-element geo-3"></div>
+
+    <!-- Decorative elements -->
+    <div class="corner-accent top-left"></div>
+    <div class="corner-accent bottom-right"></div>
+    <div class="circle-deco"></div>
+    <div class="circle-deco-inner"></div>
+    <div class="line-accent line-accent-1"></div>
+    <div class="line-accent line-accent-2"></div>
+
+    <div class="dots-pattern">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="vertical-text">Web3 Infrastructure</div>
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="brand-section">
+        <div class="logo-container">
+          <div class="logo-mark"></div>
+          <span class="logo-text">grep3</span>
+        </div>
+        <p class="tagline">
+          <span class="tagline-accent">Web3 Microservices Platform</span>
+        </p>
+        <p class="sub-tagline">No accounts · x402 Powered · Decentralized</p>
+      </div>
+
+      <div class="services-section">
+        <div class="services-grid">
+          <div class="service-card">
+            <div class="service-icon">λ</div>
+            <span class="service-name">Exec Engine</span>
+            <span class="service-desc">Run any code in Docker</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">#</div>
+            <span class="service-name">Merkletree</span>
+            <span class="service-desc">Generate Merkle proofs</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">$</div>
+            <span class="service-name">Prices API</span>
+            <span class="service-desc">Solana + EVM tokens</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">◊</div>
+            <span class="service-name">Crypto News</span>
+            <span class="service-desc">AI-powered summaries</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">◎</div>
+            <span class="service-name">Tornado API</span>
+            <span class="service-desc">Privacy transactions</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">↻</div>
+            <span class="service-name">Web Remix</span>
+            <span class="service-desc">AI site transformation</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">&gt;_</div>
+            <span class="service-name">CLI</span>
+            <span class="service-desc">Terminal interface</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">⧖</div>
+            <span class="service-name">Liquidity</span>
+            <span class="service-desc">Uniswap V3/V4 viz</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
