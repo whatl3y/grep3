@@ -75,9 +75,18 @@ export class PriceService {
 
       log.info(`Price lookup for ${token} completed in ${Date.now() - startTime}ms`);
 
+      // Add nextUpdateAt to fresh responses
+      const nextUpdateAt = result.metadata.lastUpdated + this.cacheTtl * 1000;
+
       return {
         success: true,
-        data: result,
+        data: {
+          ...result,
+          metadata: {
+            ...result.metadata,
+            nextUpdateAt,
+          },
+        },
       };
     } catch (error: any) {
       log.error(`Price lookup error for ${token}:`, error);
