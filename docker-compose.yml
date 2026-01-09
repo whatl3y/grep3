@@ -238,6 +238,25 @@ services:
     volumes:
       - ncaab-predict-data:/app/data
 
+  prices-api:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/prices/Dockerfile
+    depends_on:
+      - redis
+    ports:
+      - "8097:8097"
+    env_file:
+      - ./apps/prices/.env
+    environment:
+      - HOST=http://prices-api:8097
+      - PORT=8097
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/prices/dist:/usr/grep3/apps/prices/dist
+
 volumes:
   ncaab-predict-data:
     name: ncaab-predict-data
