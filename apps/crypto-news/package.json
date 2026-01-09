@@ -1,0 +1,45 @@
+{
+  "name": "crypto-news",
+  "version": "0.0.1",
+  "description": "Crypto news aggregator that summarizes daily crypto events using AI",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whatl3y/grep3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "resque:worker": "node dist/resqueWorker",
+    "resque:scheduler": "node dist/resqueScheduler",
+    "seed:sources": "node dist/tasks/seedSources.js",
+    "backfill": "node dist/tasks/backfill.js",
+    "start": "node dist/webServer.js",
+    "test": "mocha --require ts-node/register --recursive --parallel './src/**/*.spec.ts'"
+  },
+  "author": "Lance Whatley <lance@moontography.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@grep3/core": "workspace:*",
+    "bunyan": "^1.8.15",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.8.2",
+    "kysely": "^0.28.8",
+    "minimist": "^1.2.8",
+    "node-resque": "^9.3.8",
+    "openai": "^4.77.0",
+    "pg": "^8.16.3",
+    "pug": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "@types/express": "^5.0.6",
+    "@types/minimist": "^1.2.5",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "mocha": "^11.7.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

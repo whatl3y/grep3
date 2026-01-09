@@ -1,0 +1,73 @@
+extends layout
+
+block content
+  .day-header
+    h2= displayDate
+    if isToday
+      span.badge.today Today
+
+  nav.day-nav
+    a.nav-link.prev(href=`/day/${prevDate}`)
+      span.arrow &larr;
+      span Previous Day
+    if hasNext
+      a.nav-link.next(href=`/day/${nextDate}`)
+        span Next Day
+        span.arrow &rarr;
+
+  if hasSummary
+    section.summary-section
+      .summary-content
+        each event in events
+          article.event-card
+            .event-header
+              h3.event-headline
+                span.event-rank #{event.rank}.
+                |  #{event.headline}
+              .event-badges
+                span.category-badge(class=`category-${event.category}`)= event.category
+                if event.popularity_score && event.popularity_score > 1
+                  span.popularity-badge(title=`Reported by ${event.popularity_score} sources`)
+                    - for (var i = 0; i < Math.min(event.popularity_score, 5); i++)
+                      span.popularity-dot
+
+            p.event-summary= event.summary
+
+            if event.inlineReferences && event.inlineReferences.length > 0
+              .inline-references
+                span.refs-label Sources:
+                each ref, index in event.inlineReferences
+                  if index > 0
+                    span.ref-separator  |
+                  a.inline-ref(href=ref.url target="_blank" rel="noopener noreferrer" title=ref.title)= ref.source_name
+
+      if references && references.length > 0
+        section.references-section
+          h3 All Sources
+          ul.references-list
+            each ref in references
+              li.reference-item
+                a(href=ref.url target="_blank" rel="noopener noreferrer")= ref.title
+                span.source-name  — #{ref.source_name}
+
+      .summary-meta
+        if generatedAt
+          p.generated-at Last updated: #{new Date(generatedAt).toLocaleString('en-US', { timeZone: 'UTC' })} UTC
+        a.view-raw(href=`/day/${date}/raw`) View raw items
+  else
+    section.empty-state
+      h3 No Summary Available
+      p We don't have a summary for this date yet.
+      if isToday
+        p Check back soon — summaries are generated every 4 hours.
+      else
+        p This date may be before our data collection started.
+
+  nav.day-nav.bottom
+    a.nav-link.prev(href=`/day/${prevDate}`)
+      span.arrow &larr;
+      span Previous Day
+    if hasNext
+      a.nav-link.next(href=`/day/${nextDate}`)
+        span Next Day
+        span.arrow &rarr;

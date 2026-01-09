@@ -1,0 +1,50 @@
+extends layout
+
+block content
+  .day-header
+    h2 Raw News Items
+    span.badge #{itemCount} items
+
+  p.section-label= displayDate
+
+  nav.day-nav
+    a.nav-link.prev(href=`/day/${prevDate}/raw`)
+      span.arrow &larr;
+      span Previous
+    a.nav-link.summary(href=`/day/${date}`) View Summary
+    if hasNext
+      a.nav-link.next(href=`/day/${nextDate}/raw`)
+        span Next
+        span.arrow &rarr;
+
+  if items && items.length > 0
+    section.items-section
+      ul.items-list
+        each item in items
+          li.item-card
+            .item-header
+              span.source-badge= item.source_name
+              if item.relevance_score
+                span.score-badge Score: #{item.relevance_score}
+            h3.item-title
+              a(href=item.url target="_blank" rel="noopener noreferrer")= item.title
+            if item.content
+              p.item-content= item.content.substring(0, 300) + (item.content.length > 300 ? '...' : '')
+            .item-meta
+              if item.author
+                span By #{item.author}
+              span #{new Date(item.published_at).toLocaleString('en-US', { timeZone: 'UTC' })} UTC
+  else
+    section.empty-state
+      h3 No News Items
+      p No news items have been collected for this date yet.
+
+  nav.day-nav.bottom
+    a.nav-link.prev(href=`/day/${prevDate}/raw`)
+      span.arrow &larr;
+      span Previous
+    a.nav-link.summary(href=`/day/${date}`) View Summary
+    if hasNext
+      a.nav-link.next(href=`/day/${nextDate}/raw`)
+        span Next
+        span.arrow &rarr;

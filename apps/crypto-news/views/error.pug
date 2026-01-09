@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  section.error-section
+    h2= title || 'Error'
+    p.error-message= message || 'An unexpected error occurred.'
+    a.back-link(href="/")
+      span &larr;
+      span Back to Today

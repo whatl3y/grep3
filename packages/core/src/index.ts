@@ -15,6 +15,9 @@ export * from "./database/models/addresses";
 export * from "./database/models/executions";
 export * from "./database/models/merkletrees";
 export * from "./database/models/merkletreeValues";
+export * from "./database/models/cryptoNewsSources";
+export * from "./database/models/cryptoNewsItems";
+export * from "./database/models/cryptoDailySummaries";
 
 // Redis
 export { createRedisClient, getRedisOptions } from "./redis";

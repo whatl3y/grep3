@@ -257,6 +257,62 @@ services:
     volumes:
       - ./apps/prices/dist:/usr/grep3/apps/prices/dist
 
+  crypto-news-web:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/crypto-news/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./apps/crypto-news/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://crypto-news-web:8001
+      - PORT=8001
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/crypto-news/dist:/usr/grep3/apps/crypto-news/dist
+      - ./apps/crypto-news/views:/usr/grep3/apps/crypto-news/views
+      - ./apps/crypto-news/public:/usr/grep3/apps/crypto-news/public
+
+  crypto-news-workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/crypto-news/Dockerfile.worker
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/crypto-news/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://crypto-news-web:8001
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/crypto-news/dist:/usr/grep3/apps/crypto-news/dist
+
+  crypto-news-scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/crypto-news/Dockerfile.scheduler
+    depends_on:
+      - redis
+    env_file:
+      - ./apps/crypto-news/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/crypto-news/dist:/usr/grep3/apps/crypto-news/dist
+
 volumes:
   ncaab-predict-data:
     name: ncaab-predict-data

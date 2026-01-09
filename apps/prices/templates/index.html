@@ -574,6 +574,44 @@
     <section>
       <div class="section-header">
         <span class="section-number">1</span>
+        <span class="section-label">Quick Start</span>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-title">Fetch token price</span>
+          <span class="code-lang">cURL</span>
+        </div>
+        <div class="code-body">
+<pre><span class="comment"># Get price by symbol</span>
+curl <span class="string">https://prices.grep3.com/ETH</span>  <a href="https://prices.grep3.com/ETH" target="_blank" style="color: var(--code-comment); font-size: 11px; margin-left: 8px;">try it &rarr;</a>
+
+<span class="comment"># Get price by EVM contract address</span>
+curl <span class="string">https://prices.grep3.com/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984</span>  <a href="https://prices.grep3.com/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" target="_blank" style="color: var(--code-comment); font-size: 11px; margin-left: 8px;">try it &rarr;</a>
+
+<span class="comment"># Get price by Solana mint</span>
+curl <span class="string">https://prices.grep3.com/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v</span>  <a href="https://prices.grep3.com/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" target="_blank" style="color: var(--code-comment); font-size: 11px; margin-left: 8px;">try it &rarr;</a></pre>
+        </div>
+      </div>
+
+      <div class="code-block" style="margin-top: 16px;">
+        <div class="code-header">
+          <span class="code-title">JavaScript / TypeScript</span>
+          <span class="code-lang">JS</span>
+        </div>
+        <div class="code-body">
+<pre><span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">'https://prices.grep3.com/ETH'</span>);
+<span class="keyword">const</span> { data } = <span class="keyword">await</span> response.json();
+
+console.log(<span class="string">`ETH Price: $${data.priceUSD}`</span>);
+<span class="comment">// ETH Price: $3245.67</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <span class="section-number">2</span>
         <span class="section-label">Endpoint</span>
       </div>
 
@@ -627,7 +665,7 @@
 
     <section>
       <div class="section-header">
-        <span class="section-number">2</span>
+        <span class="section-number">3</span>
         <span class="section-label">Examples</span>
       </div>
 
@@ -712,7 +750,7 @@
 
     <section>
       <div class="section-header">
-        <span class="section-number">3</span>
+        <span class="section-number">4</span>
         <span class="section-label">Supported Networks</span>
       </div>
 
@@ -795,44 +833,6 @@
         <div class="dex-item">
           <div class="dex-icon">&#128270;</div>
           <span class="dex-name">DexScreener</span>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-header">
-        <span class="section-number">4</span>
-        <span class="section-label">Quick Start</span>
-      </div>
-
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-title">Fetch token price</span>
-          <span class="code-lang">cURL</span>
-        </div>
-        <div class="code-body">
-<pre><span class="comment"># Get price by symbol</span>
-curl <span class="string">https://prices.grep3.com/ETH</span>
-
-<span class="comment"># Get price by EVM contract address</span>
-curl <span class="string">https://prices.grep3.com/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984</span>
-
-<span class="comment"># Get price by Solana mint</span>
-curl <span class="string">https://prices.grep3.com/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v</span></pre>
-        </div>
-      </div>
-
-      <div class="code-block" style="margin-top: 16px;">
-        <div class="code-header">
-          <span class="code-title">JavaScript / TypeScript</span>
-          <span class="code-lang">JS</span>
-        </div>
-        <div class="code-body">
-<pre><span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">'https://prices.grep3.com/ETH'</span>);
-<span class="keyword">const</span> { data } = <span class="keyword">await</span> response.json();
-
-console.log(<span class="string">`ETH Price: $${data.priceUSD}`</span>);
-<span class="comment">// ETH Price: $3245.67</span></pre>
         </div>
       </div>
     </section>
