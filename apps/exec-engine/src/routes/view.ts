@@ -533,8 +533,7 @@ async function handleViewRepo(req: Request, res: Response, filePath: string) {
     res.type("html").send(html);
   } catch (err: unknown) {
     log.error("File browser error", err);
-    const message = err instanceof Error ? err.stack || err.message : "Unknown error";
-    res.status(500).send(message);
+    res.status(500).json({ error: "Failed to load file browser" });
   }
 }
 

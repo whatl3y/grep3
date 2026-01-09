@@ -24,7 +24,8 @@ export const repos: IRoute = {
       log.debug(`repos found`, address, repos);
       res.json({ repos });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      log.error("Error listing repos:", err);
+      res.status(err.statusCode || 500).json({ error: "Failed to list repos" });
     }
   },
 };
@@ -43,7 +44,8 @@ export const repoGet: IRoute = {
       log.debug(`repo found`, repo);
       res.json({ repo });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      log.error("Error getting repo:", err);
+      res.status(err.statusCode || 500).json({ error: "Failed to get repo" });
     }
   },
 };
@@ -73,7 +75,8 @@ export const repoExecute: IRoute = {
 
       res.json({ execution });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      log.error("Error executing repo:", err);
+      res.status(err.statusCode || 500).json({ error: "Failed to execute repo" });
     }
   },
 };

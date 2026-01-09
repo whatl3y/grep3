@@ -99,10 +99,15 @@ export default function FlyExecutor(
       region: flyRegion,
     };
 
-    log.debug(
-      "creating Fly machine with config:",
-      JSON.stringify(machineConfig, null, 2)
-    );
+    // Log machine config without sensitive registry_auth credentials
+    const safeConfig = {
+      ...machineConfig,
+      config: {
+        ...machineConfig.config,
+        registry_auth: machineConfig.config.registry_auth ? "[REDACTED]" : undefined,
+      },
+    };
+    log.debug("creating Fly machine with config:", JSON.stringify(safeConfig, null, 2));
 
     try {
       const machine = await flyApiRequest(

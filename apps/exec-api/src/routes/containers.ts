@@ -15,7 +15,7 @@ export const containers: IRoute = {
       const containers = await docker.listContainers({ all });
       res.json({ containers });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      res.status(err.statusCode || 500).json({ error: "Failed to list containers" });
     }
   },
 };
@@ -31,7 +31,7 @@ export const getContainer: IRoute = {
       const container = docker.getContainer(hash);
       res.json({ container: await container.inspect() });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      res.status(err.statusCode || 500).json({ error: "Failed to get container" });
     }
   },
 };

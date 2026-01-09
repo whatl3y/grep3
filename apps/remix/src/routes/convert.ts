@@ -146,8 +146,7 @@ export const convert: IRoute = {
         <head><title>Remix - Error</title></head>
         <body>
           <h1>Error: Remix Failed</h1>
-          <p>An unexpected error occurred during remix.</p>
-          <pre>${err.stack || err.message}</pre>
+          <p>An unexpected error occurred during remix. Please try again.</p>
         </body>
         </html>
       `);

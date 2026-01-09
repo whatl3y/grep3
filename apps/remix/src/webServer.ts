@@ -36,7 +36,8 @@ dotenv.config({ quiet: true });
           )
         );
       } catch (err: any) {
-        res.status(500).send(err.stack);
+        log.error("Error rendering README:", err);
+        res.status(500).json({ error: "Internal server error" });
       }
     });
 
@@ -47,7 +48,7 @@ dotenv.config({ quiet: true });
       log.info(`listening on *:${config.server.port}`)
     );
   } catch (err) {
-    console.error(err);
-    process.exit();
+    log.error("Server startup error:", err);
+    process.exit(1);
   }
 })();

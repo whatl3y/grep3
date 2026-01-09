@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { readFile } from "fs/promises";
 import RecentPushes, { RecentPush } from "../libs/RecentPushes";
 import redis from "../redis";
+import log from "../logger";
 import { IRoute } from "./index";
 
 const recentPushes = RecentPushes(redis);
@@ -113,7 +114,8 @@ export const home: IRoute = {
 
       res.type("html").send(html);
     } catch (err: any) {
-      res.status(500).send(err.stack);
+      log.error("Error rendering homepage:", err);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
 };

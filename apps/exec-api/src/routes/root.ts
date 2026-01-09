@@ -61,7 +61,7 @@ export const repos: IRoute = {
       });
     } catch (err: any) {
       log.error("error in repo route:", err);
-      res.status(err.statusCode || 500).send(err.stack);
+      res.status(err.statusCode || 500).json({ error: "Failed to get execution output" });
     }
   },
 };

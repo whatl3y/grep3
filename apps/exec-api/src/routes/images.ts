@@ -11,7 +11,7 @@ export const images: IRoute = {
       const images = await docker.listImages();
       res.json({ images });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      res.status(err.statusCode || 500).json({ error: "Failed to list images" });
     }
   },
 };
@@ -27,7 +27,7 @@ export const imageGet: IRoute = {
       const image = docker.getImage(hash);
       res.json({ image: await image.inspect() });
     } catch (err: any) {
-      res.status(err.statusCode || 500).send(err.stack);
+      res.status(err.statusCode || 500).json({ error: "Failed to get image" });
     }
   },
 };

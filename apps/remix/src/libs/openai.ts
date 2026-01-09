@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import log from "../logger";
 
 export interface IOpenAIClientOptions {
   apiKey: string;
@@ -256,11 +257,9 @@ export async function remixWebsite(
   const modelConfig = modelLimits[model] || modelLimits["gpt-4o"];
 
   // Compress HTML to reduce token usage
-  console.log(
-    `Original HTML size: ${websiteContent.length.toLocaleString()} chars`
-  );
+  log.debug(`Original HTML size: ${websiteContent.length.toLocaleString()} chars`);
   let processedHtml = compressHtml(websiteContent);
-  console.log(
+  log.debug(
     `After compression: ${processedHtml.length.toLocaleString()} chars (${Math.round(
       (1 - processedHtml.length / websiteContent.length) * 100
     )}% reduction)`
@@ -278,7 +277,7 @@ export async function remixWebsite(
   // );
   const finalHtml = processedHtml;
   const truncated = processedHtml;
-  console.log(
+  log.debug(
     `Final HTML size: ${finalHtml.length.toLocaleString()} chars${
       truncated ? " (truncated)" : ""
     }`
@@ -324,20 +323,16 @@ Remember: Return ONLY the complete HTML document. No explanations, no markdown, 
       (usage.completion_tokens / 1_000_000) * modelConfig.outputPricePerMillion;
     const totalCost = inputCost + outputCost;
 
-    console.log(`\n💰 OpenAI API Cost Breakdown:`);
-    console.log(`   Model: ${model}`);
-    console.log(
-      `   Input tokens: ${usage.prompt_tokens.toLocaleString()} ($${inputCost.toFixed(
-        4
-      )})`
-    );
-    console.log(
-      `   Output tokens: ${usage.completion_tokens.toLocaleString()} ($${outputCost.toFixed(
-        4
-      )})`
-    );
-    console.log(`   Total tokens: ${usage.total_tokens.toLocaleString()}`);
-    console.log(`   💵 Total cost: $${totalCost.toFixed(4)} USD\n`);
+    log.info({
+      msg: "OpenAI API usage",
+      model,
+      inputTokens: usage.prompt_tokens,
+      outputTokens: usage.completion_tokens,
+      totalTokens: usage.total_tokens,
+      inputCost: inputCost.toFixed(4),
+      outputCost: outputCost.toFixed(4),
+      totalCost: totalCost.toFixed(4),
+    });
   }
 
   const htmlContent = completion.choices[0]?.message?.content || "";
