@@ -1,4 +1,6 @@
 import express, { Express } from "express";
+import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 import { db } from "@grep3/core";
 import log from "./logger";
@@ -23,18 +25,19 @@ app.use("/generate", apiRoutes.generate);
 app.use("/status", apiRoutes.status);
 app.use("/proof", apiRoutes.proof);
 
-// app.get("/", (req, res) => {
-//   res.json({
-//     service: "Merkle Tree API",
-//     version: "0.0.1",
-//     endpoints: {
-//       "POST /generate/raw": "Generate merkle tree from raw array data",
-//       "POST /generate/file": "Generate merkle tree from CSV file",
-//       "GET /status/:uuid": "Check job status",
-//       "GET /proof/:root_hash/:unique_id": "Get proof for specific leaf",
-//     },
-//   });
-// });
+// Landing page
+app.get("/", (_req, res) => {
+  const templatePath = path.join(__dirname, "..", "templates", "index.html");
+  fs.readFile(templatePath, "utf8", (err, html) => {
+    if (err) {
+      log.error("Error reading index.html template:", err);
+      return res.status(500).json({ error: "Failed to load landing page" });
+    }
+    // Replace template placeholder with actual host
+    const renderedHtml = html.replace(/\{\{HOST\}\}/g, config.server.host);
+    res.type("html").send(renderedHtml);
+  });
+});
 
 // Start server
 const port = config.server.port;

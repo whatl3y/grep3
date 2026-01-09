@@ -538,20 +538,23 @@
       }
 
       /* Card accent colors */
+      .app-card[data-app="prices"] {
+        --card-accent: #22c55e;
+      }
       .app-card[data-app="git"] {
         --card-accent: #f97316;
       }
-      .app-card[data-app="execution-engine"] {
-        --card-accent: #0ea5e9;
-      }
-      .app-card[data-app="prices"] {
-        --card-accent: #22c55e;
+      .app-card[data-app="merkletree"] {
+        --card-accent: #6366f1;
       }
       .app-card[data-app="crypto-news"] {
         --card-accent: #8b5cf6;
       }
       .app-card[data-app="liquidity"] {
         --card-accent: #f59e0b;
+      }
+      .app-card[data-app="execution-engine"] {
+        --card-accent: #0ea5e9;
       }
       .app-card[data-app="ncaab"] {
         --card-accent: #ef4444;
@@ -817,12 +820,13 @@
       <div class="container">
         <div class="hero-badge">Permissionless Microservices Platform</div>
         <h1 class="hero-title">
-          <strong>Permissionless</strong> <span class="mono">microservices</span><br />
-          actual value
+          <strong>Permissionless</strong> <span class="mono">microservices</span
+          ><br />
+          real value
         </h1>
         <p class="hero-subtitle">
-          Permissionless Web3 microservices powered by x402 payment rails.
-          No accounts. No API keys. Just connect your wallet and pay per use.
+          Permissionless Web3 microservices powered by x402 payment rails. No
+          accounts. No API keys. Just connect your wallet and pay per use.
         </p>
         <div class="hero-actions">
           <a href="#apps" class="btn btn-primary">
@@ -922,7 +926,7 @@
       <div class="container">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-value">6</div>
+            <div class="stat-value">7</div>
             <div class="stat-label">Services</div>
           </div>
           <div class="stat-item">
@@ -950,14 +954,45 @@
             Permissionless <strong>microservices</strong>
           </h2>
           <p class="section-desc">
-            Each service is independent, containerized, and accessible without accounts.
-            Pay per use with crypto via x402 payment rails.
+            Each service is independent, containerized, and accessible without
+            accounts. Pay per use with crypto via x402 payment rails.
           </p>
         </div>
 
         <div class="apps-grid">
+          <!-- Prices -->
+          <a
+            href="https://prices.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="prices"
+          >
+            <div class="app-icon">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </div>
+            <h3 class="app-name">prices <span class="app-tag">Data</span></h3>
+            <span class="app-url">prices.grep3.com</span>
+            <p class="app-desc">
+              Token price API supporting symbols and blockchain addresses. Query
+              prices for Solana, EVM chains, and more via multiple providers.
+            </p>
+            <div class="app-features">
+              <span class="app-feature">Solana</span>
+              <span class="app-feature">EVM</span>
+              <span class="app-feature">DEX + CEX</span>
+            </div>
+          </a>
+
           <!-- Git -->
-          <a href="https://git.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="git">
+          <a
+            href="https://git.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="git"
+          >
             <div class="app-icon">
               <svg viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="4" />
@@ -967,13 +1002,12 @@
                 <line x1="12" y1="16" x2="12" y2="23" />
               </svg>
             </div>
-            <h3 class="app-name">
-              git <span class="app-tag">Hosting</span>
-            </h3>
+            <h3 class="app-name">git <span class="app-tag">Hosting</span></h3>
             <span class="app-url">git.grep3.com</span>
             <p class="app-desc">
-              Decentralized git hosting powered by Ethereum addresses. Push and pull
-              repos using your wallet as authentication. No accounts needed.
+              Decentralized git hosting powered by Ethereum addresses. Push and
+              pull repos using your wallet as authentication. No accounts
+              needed.
             </p>
             <div class="app-features">
               <span class="app-feature">Web3 Auth</span>
@@ -982,8 +1016,107 @@
             </div>
           </a>
 
+          <!-- Merkle Tree -->
+          <a
+            href="https://merkletree.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="merkletree"
+          >
+            <div class="app-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <h3 class="app-name">
+              merkletree <span class="app-tag">Crypto</span>
+            </h3>
+            <span class="app-url">merkletree.grep3.com</span>
+            <p class="app-desc">
+              Generate merkle trees for gasless airdrops and allowlists. Upload
+              data via JSON or CSV, retrieve verifiable proofs for on-chain
+              claims.
+            </p>
+            <div class="app-features">
+              <span class="app-feature">Airdrops</span>
+              <span class="app-feature">Proofs</span>
+              <span class="app-feature">Async</span>
+            </div>
+          </a>
+
+          <!-- Crypto News -->
+          <a
+            href="https://news.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="crypto-news"
+          >
+            <div class="app-icon">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"
+                />
+                <path d="M18 14h-8" />
+                <path d="M15 18h-5" />
+                <path d="M10 6h8v4h-8V6Z" />
+              </svg>
+            </div>
+            <h3 class="app-name">
+              crypto-news <span class="app-tag">AI</span>
+            </h3>
+            <span class="app-url">news.grep3.com</span>
+            <p class="app-desc">
+              AI-powered crypto news aggregator. Scrapes multiple sources and
+              generates daily summaries using OpenAI to keep you informed
+              without the noise.
+            </p>
+            <div class="app-features">
+              <span class="app-feature">OpenAI</span>
+              <span class="app-feature">RSS</span>
+              <span class="app-feature">Summaries</span>
+            </div>
+          </a>
+
+          <!-- Liquidity -->
+          <a
+            href="https://liquidity.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="liquidity"
+          >
+            <div class="app-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 3v18h18" />
+                <path d="M18 9l-5 5-4-4-3 3" />
+                <circle cx="18" cy="9" r="2" />
+                <circle cx="13" cy="14" r="2" />
+                <circle cx="9" cy="10" r="2" />
+              </svg>
+            </div>
+            <h3 class="app-name">
+              liquidity <span class="app-tag">DeFi</span>
+            </h3>
+            <span class="app-url">liquidity.grep3.com</span>
+            <p class="app-desc">
+              Uniswap V3/V4 concentrated liquidity visualization. Real-time
+              heatmaps, price curves, and depth charts for any pool.
+            </p>
+            <div class="app-features">
+              <span class="app-feature">V3 + V4</span>
+              <span class="app-feature">Heatmaps</span>
+              <span class="app-feature">React</span>
+            </div>
+          </a>
+
           <!-- Execution Engine -->
-          <a href="https://execution.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="execution-engine">
+          <a
+            href="https://execution.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="execution-engine"
+          >
             <div class="app-icon">
               <svg viewBox="0 0 24 24">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
@@ -1009,82 +1142,13 @@
             </div>
           </a>
 
-          <!-- Prices -->
-          <a href="https://prices.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="prices">
-            <div class="app-icon">
-              <svg viewBox="0 0 24 24">
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            </div>
-            <h3 class="app-name">
-              prices <span class="app-tag">Data</span>
-            </h3>
-            <span class="app-url">prices.grep3.com</span>
-            <p class="app-desc">
-              Token price API supporting symbols and blockchain addresses. Query prices
-              for Solana, EVM chains, and more via multiple providers.
-            </p>
-            <div class="app-features">
-              <span class="app-feature">Solana</span>
-              <span class="app-feature">EVM</span>
-              <span class="app-feature">DEX + CEX</span>
-            </div>
-          </a>
-
-          <!-- Crypto News -->
-          <a href="https://news.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="crypto-news">
-            <div class="app-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                <path d="M18 14h-8" />
-                <path d="M15 18h-5" />
-                <path d="M10 6h8v4h-8V6Z" />
-              </svg>
-            </div>
-            <h3 class="app-name">
-              crypto-news <span class="app-tag">AI</span>
-            </h3>
-            <span class="app-url">news.grep3.com</span>
-            <p class="app-desc">
-              AI-powered crypto news aggregator. Scrapes multiple sources and generates
-              daily summaries using OpenAI to keep you informed without the noise.
-            </p>
-            <div class="app-features">
-              <span class="app-feature">OpenAI</span>
-              <span class="app-feature">RSS</span>
-              <span class="app-feature">Summaries</span>
-            </div>
-          </a>
-
-          <!-- Liquidity -->
-          <a href="https://liquidity.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="liquidity">
-            <div class="app-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M3 3v18h18" />
-                <path d="M18 9l-5 5-4-4-3 3" />
-                <circle cx="18" cy="9" r="2" />
-                <circle cx="13" cy="14" r="2" />
-                <circle cx="9" cy="10" r="2" />
-              </svg>
-            </div>
-            <h3 class="app-name">
-              liquidity <span class="app-tag">DeFi</span>
-            </h3>
-            <span class="app-url">liquidity.grep3.com</span>
-            <p class="app-desc">
-              Uniswap V3/V4 concentrated liquidity visualization. Real-time
-              heatmaps, price curves, and depth charts for any pool.
-            </p>
-            <div class="app-features">
-              <span class="app-feature">V3 + V4</span>
-              <span class="app-feature">Heatmaps</span>
-              <span class="app-feature">React</span>
-            </div>
-          </a>
-
           <!-- NCAAB Predict -->
-          <a href="https://ncaab.grep3.com" target="_blank" class="app-card animate-on-scroll" data-app="ncaab">
+          <a
+            href="https://ncaab.grep3.com"
+            target="_blank"
+            class="app-card animate-on-scroll"
+            data-app="ncaab"
+          >
             <div class="app-icon">
               <svg viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" />
@@ -1168,24 +1232,45 @@
               <span class="logo-text">grep3</span>
             </a>
             <p class="footer-tagline">
-              Permissionless Web3 microservices. No accounts required.
-              Pay per use with x402 payment rails.
+              Permissionless Web3 microservices. No accounts required. Pay per
+              use with x402 payment rails.
             </p>
           </div>
           <div class="footer-col">
             <h4 class="footer-col-title">Services</h4>
             <ul class="footer-links">
+              <li>
+                <a href="https://prices.grep3.com" target="_blank">prices</a>
+              </li>
               <li><a href="https://git.grep3.com" target="_blank">git</a></li>
-              <li><a href="https://execution.grep3.com" target="_blank">execution-engine</a></li>
-              <li><a href="https://prices.grep3.com" target="_blank">prices</a></li>
-              <li><a href="https://news.grep3.com" target="_blank">crypto-news</a></li>
+              <li>
+                <a href="https://merkletree.grep3.com" target="_blank"
+                  >merkletree</a
+                >
+              </li>
+              <li>
+                <a href="https://news.grep3.com" target="_blank">crypto-news</a>
+              </li>
             </ul>
           </div>
           <div class="footer-col">
             <h4 class="footer-col-title">More Services</h4>
             <ul class="footer-links">
-              <li><a href="https://liquidity.grep3.com" target="_blank">liquidity</a></li>
-              <li><a href="https://ncaab.grep3.com" target="_blank">ncaab-predict</a></li>
+              <li>
+                <a href="https://liquidity.grep3.com" target="_blank"
+                  >liquidity</a
+                >
+              </li>
+              <li>
+                <a href="https://execution.grep3.com" target="_blank"
+                  >execution-engine</a
+                >
+              </li>
+              <li>
+                <a href="https://ncaab.grep3.com" target="_blank"
+                  >ncaab-predict</a
+                >
+              </li>
             </ul>
           </div>
           <div class="footer-col">

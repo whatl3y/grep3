@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grep3 Merkle Tree API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --bg-elevated: #ffffff;
+      --bg-code: #111113;
+      --text-primary: #111113;
+      --text-secondary: #555560;
+      --text-tertiary: #8c8c96;
+      --text-code: #e4e4e7;
+      --border: #e4e4e7;
+      --border-subtle: #f0f0f2;
+      --accent: #111113;
+      --accent-soft: #f5f5f7;
+      --green: #10b981;
+      --green-soft: #d1fae5;
+      --blue: #3b82f6;
+      --blue-soft: #dbeafe;
+      --amber: #f59e0b;
+      --amber-soft: #fef3c7;
+      --code-string: #7dd3fc;
+      --code-keyword: #f472b6;
+      --code-comment: #6b7280;
+      --code-number: #a5b4fc;
+      --code-property: #86efac;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Subtle dot pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.4;
+      pointer-events: none;
+      background-image: radial-gradient(circle, #d4d4d8 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+    }
+
+    /* Header */
+    header {
+      padding: 64px 0 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-mark svg {
+      width: 22px;
+      height: 22px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .logo-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: -2.5px;
+      color: var(--text-primary);
+      margin-bottom: 18px;
+      line-height: 1.05;
+    }
+
+    .tagline {
+      font-size: 19px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      max-width: 580px;
+      line-height: 1.55;
+    }
+
+    /* Feature badges */
+    .features-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .feature-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .feature-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .feature-badge .dot.green { background: var(--green); }
+    .feature-badge .dot.blue { background: var(--blue); }
+    .feature-badge .dot.amber { background: var(--amber); }
+
+    /* Sections */
+    section {
+      padding: 56px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    /* How It Works */
+    .flow-diagram {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 32px;
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    .flow-step {
+      text-align: center;
+      position: relative;
+      padding: 0 16px;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 28px;
+      right: -16px;
+      width: 32px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--border), var(--text-tertiary), var(--border));
+    }
+
+    .flow-num {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-soft);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .flow-step:hover .flow-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .flow-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .flow-desc {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      line-height: 1.45;
+    }
+
+    /* Endpoint cards */
+    .endpoint-group {
+      display: grid;
+      gap: 20px;
+    }
+
+    .endpoint-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px;
+      background: var(--accent-soft);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .method-badge.post {
+      background: var(--blue);
+      color: white;
+    }
+
+    .method-badge.get {
+      background: var(--green);
+      color: white;
+    }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .endpoint-body {
+      padding: 24px;
+    }
+
+    .endpoint-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.55;
+    }
+
+    /* Code blocks */
+    .code-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+    }
+
+    .code-tab {
+      padding: 10px 18px;
+      background: #1f1f23;
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.15s ease;
+    }
+
+    .code-tab:first-child {
+      border-radius: 10px 0 0 0;
+    }
+
+    .code-tab.active {
+      background: var(--bg-code);
+      color: var(--text-code);
+    }
+
+    .code-block {
+      background: var(--bg-code);
+      border-radius: 0 10px 10px 10px;
+      overflow: hidden;
+    }
+
+    .code-block.solo {
+      border-radius: 10px;
+    }
+
+    .code-header {
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .code-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .code-body {
+      padding: 18px 22px;
+      overflow-x: auto;
+    }
+
+    .code-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-code);
+      margin: 0;
+    }
+
+    .code-body .string { color: var(--code-string); }
+    .code-body .keyword { color: var(--code-keyword); }
+    .code-body .comment { color: var(--code-comment); }
+    .code-body .number { color: var(--code-number); }
+    .code-body .property { color: var(--code-property); }
+
+    /* Parameters */
+    .params-section {
+      margin-top: 24px;
+    }
+
+    .params-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+
+    .param-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .param-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .param-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-width: 100px;
+    }
+
+    .param-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      background: var(--accent-soft);
+      border-radius: 4px;
+      color: var(--text-tertiary);
+    }
+
+    .param-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    /* Response states */
+    .response-states {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .response-state {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .state-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .state-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .state-dot.created { background: var(--blue); }
+    .state-dot.processing { background: var(--amber); }
+    .state-dot.complete { background: var(--green); }
+
+    .state-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      background: var(--accent-soft);
+      padding: 8px 10px;
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+
+    /* Use Cases */
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .use-case {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.2s ease;
+    }
+
+    .use-case:hover {
+      border-color: var(--text-tertiary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .use-case-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-soft);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+
+    .use-case h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .use-case p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* Quick Start */
+    .quick-start-steps {
+      display: grid;
+      gap: 24px;
+    }
+
+    .qs-step {
+      display: grid;
+      gap: 14px;
+    }
+
+    .qs-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .qs-num {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .qs-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    footer {
+      padding: 48px 0;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-bottom: 20px;
+    }
+
+    .footer-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-brand {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* Data format info */
+    .data-format {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .format-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .format-title svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-secondary);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .format-list {
+      list-style: none;
+    }
+
+    .format-list li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .format-list li:last-child {
+      border-bottom: none;
+    }
+
+    .format-list li::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      background: var(--text-tertiary);
+      border-radius: 50%;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    .format-list code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--accent-soft);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      header {
+        padding: 48px 0 40px;
+      }
+
+      h1 {
+        font-size: 36px;
+        letter-spacing: -1.5px;
+      }
+
+      .tagline {
+        font-size: 16px;
+      }
+
+      section {
+        padding: 40px 0;
+      }
+
+      .flow-steps {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+
+      .flow-step:not(:last-child)::after {
+        display: none;
+      }
+
+      .response-states {
+        grid-template-columns: 1fr;
+      }
+
+      .use-cases {
+        grid-template-columns: 1fr;
+      }
+
+      .features-row {
+        gap: 8px;
+      }
+
+      .feature-badge {
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-row">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="logo-text">grep3/merkletree</span>
+      </div>
+      <h1>Merkle Tree API</h1>
+      <p class="tagline">Generate cryptographic merkle trees for gasless airdrops and allowlists. Upload raw arrays or CSV files, retrieve verifiable proofs for on-chain claims. Powered by grep3.</p>
+
+      <div class="features-row">
+        <span class="feature-badge">
+          <span class="dot green"></span>
+          On-Chain Verifiable
+        </span>
+        <span class="feature-badge">
+          <span class="dot blue"></span>
+          Async Processing
+        </span>
+        <span class="feature-badge">
+          <span class="dot amber"></span>
+          CSV &amp; JSON Input
+        </span>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v4m0 12v4m-8-10h4m12 0h4"/>
+            <path d="M5.6 5.6l2.8 2.8m7.2 7.2l2.8 2.8m-2.8-12.8l2.8 2.8M5.6 18.4l2.8-2.8"/>
+          </svg>
+        </div>
+        <h2 class="section-title">How It Works</h2>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-label">Submit Data</div>
+            <div class="flow-desc">POST raw JSON or CSV file to /generate</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-label">Queue Job</div>
+            <div class="flow-desc">Receive job UUID, processing begins async</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-label">Build Tree</div>
+            <div class="flow-desc">grep3 creates merkle tree from data</div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-label">Get Proofs</div>
+            <div class="flow-desc">Query proofs by root hash &amp; unique ID</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-format">
+        <div class="format-title">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4m0-4h.01"/>
+          </svg>
+          Data Format Requirements
+        </div>
+        <ul class="format-list">
+          <li>Each row is an array of string values: <code>[["id1", "val1", "val2"], ["id2", "val3", "val4"]]</code></li>
+          <li>First element of each row must be a unique identifier</li>
+          <li>All values are treated as strings for maximum flexibility</li>
+          <li>CSV files are parsed with relaxed column counts supported</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8m-4-4v4"/>
+          </svg>
+        </div>
+        <h2 class="section-title">API Endpoints</h2>
+      </div>
+
+      <div class="endpoint-group">
+        <!-- POST /generate/raw -->
+        <div class="endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-badge post">POST</span>
+            <span class="endpoint-path">/generate/raw</span>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-desc">Generate a merkle tree from raw JSON array data. Each sub-array becomes a leaf, with the first element as the unique identifier.</p>
+
+            <div class="code-tabs">
+              <button class="code-tab active">Request</button>
+            </div>
+            <div class="code-block">
+              <div class="code-body">
+<pre>{
+  <span class="property">"data"</span>: [
+    [<span class="string">"user_001"</span>, <span class="string">"100"</span>, <span class="string">"0x1234..."</span>],
+    [<span class="string">"user_002"</span>, <span class="string">"250"</span>, <span class="string">"0x5678..."</span>],
+    [<span class="string">"user_003"</span>, <span class="string">"75"</span>, <span class="string">"0x9abc..."</span>]
+  ]
+}</pre>
+              </div>
+            </div>
+
+            <div class="code-block solo" style="margin-top: 14px;">
+              <div class="code-header">
+                <span class="code-label">Response</span>
+              </div>
+              <div class="code-body">
+<pre>{
+  <span class="property">"job_uuid"</span>: <span class="string">"550e8400-e29b-41d4-a716-446655440000"</span>
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POST /generate/file -->
+        <div class="endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-badge post">POST</span>
+            <span class="endpoint-path">/generate/file</span>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-desc">Upload a CSV file to generate a merkle tree. Each row becomes a leaf, with the first column as the unique identifier.</p>
+
+            <div class="code-block solo">
+              <div class="code-header">
+                <span class="code-label">cURL Example</span>
+              </div>
+              <div class="code-body">
+<pre><span class="comment"># Upload CSV file</span>
+curl -X POST {{HOST}}/generate/file \
+  -F <span class="string">"file=@airdrop_data.csv"</span>
+
+<span class="comment"># Response</span>
+{ <span class="property">"job_uuid"</span>: <span class="string">"550e8400-e29b-41d4-a716-446655440000"</span> }</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GET /status/:uuid -->
+        <div class="endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/status/:uuid</span>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-desc">Check the processing status of a merkle tree generation job. Poll this endpoint until status is "complete".</p>
+
+            <div class="params-section">
+              <div class="params-label">Parameters</div>
+              <div class="param-row">
+                <span class="param-name">uuid</span>
+                <span class="param-type">string</span>
+                <span class="param-desc">The job UUID returned from /generate endpoints</span>
+              </div>
+            </div>
+
+            <div class="response-states">
+              <div class="response-state">
+                <div class="state-label">
+                  <span class="state-dot created"></span>
+                  Created
+                </div>
+                <div class="state-code">{ "status": "created" }</div>
+              </div>
+              <div class="response-state">
+                <div class="state-label">
+                  <span class="state-dot processing"></span>
+                  Processing
+                </div>
+                <div class="state-code">{ "status": "processing" }</div>
+              </div>
+              <div class="response-state">
+                <div class="state-label">
+                  <span class="state-dot complete"></span>
+                  Complete
+                </div>
+                <div class="state-code">{ "status": "complete",<br>&nbsp;&nbsp;"root_hash": "0x..." }</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GET /proof/:root_hash/:unique_id -->
+        <div class="endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-badge get">GET</span>
+            <span class="endpoint-path">/proof/:root_hash/:unique_id</span>
+          </div>
+          <div class="endpoint-body">
+            <p class="endpoint-desc">Retrieve the merkle proof for a specific leaf. Use this proof to verify inclusion on-chain in your smart contract.</p>
+
+            <div class="params-section">
+              <div class="params-label">Parameters</div>
+              <div class="param-row">
+                <span class="param-name">root_hash</span>
+                <span class="param-type">string</span>
+                <span class="param-desc">The merkle root hash returned after job completion</span>
+              </div>
+              <div class="param-row">
+                <span class="param-name">unique_id</span>
+                <span class="param-type">string</span>
+                <span class="param-desc">The unique identifier (first element) of the leaf to retrieve</span>
+              </div>
+            </div>
+
+            <div class="code-block solo" style="margin-top: 20px;">
+              <div class="code-header">
+                <span class="code-label">Response</span>
+              </div>
+              <div class="code-body">
+<pre>{
+  <span class="property">"root_hash"</span>: <span class="string">"0x8a3552d60a98e0ade765adddad0a2e420ca9b1eef5f326ba7ab860bb4ea72c94"</span>,
+  <span class="property">"unique_id"</span>: <span class="string">"user_001"</span>,
+  <span class="property">"values"</span>: [<span class="string">"user_001"</span>, <span class="string">"100"</span>, <span class="string">"0x1234..."</span>],
+  <span class="property">"proof"</span>: [
+    <span class="string">"0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229"</span>,
+    <span class="string">"0x1234567890abcdef..."</span>
+  ]
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <h2 class="section-title">Quick Start</h2>
+      </div>
+
+      <div class="quick-start-steps">
+        <div class="qs-step">
+          <div class="qs-header">
+            <span class="qs-num">1</span>
+            <span class="qs-title">Submit your data</span>
+          </div>
+          <div class="code-block solo">
+            <div class="code-body">
+<pre><span class="comment"># Using cURL with raw JSON</span>
+curl -X POST {{HOST}}/generate/raw \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"data":[["addr1","100"],["addr2","200"],["addr3","150"]]}'</span>
+
+<span class="comment"># Response: {"job_uuid":"abc123..."}</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-header">
+            <span class="qs-num">2</span>
+            <span class="qs-title">Poll for completion</span>
+          </div>
+          <div class="code-block solo">
+            <div class="code-body">
+<pre><span class="comment"># Check job status</span>
+curl {{HOST}}/status/abc123...
+
+<span class="comment"># When complete: {"status":"complete","root_hash":"0x8a35..."}</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-header">
+            <span class="qs-num">3</span>
+            <span class="qs-title">Retrieve proofs</span>
+          </div>
+          <div class="code-block solo">
+            <div class="code-body">
+<pre><span class="comment"># Get proof for a specific address</span>
+curl {{HOST}}/proof/0x8a35.../addr1
+
+<span class="comment"># Response includes the proof array for on-chain verification</span>
+{
+  <span class="property">"proof"</span>: [<span class="string">"0x5931b4ed..."</span>, <span class="string">"0x1234..."</span>],
+  <span class="property">"values"</span>: [<span class="string">"addr1"</span>, <span class="string">"100"</span>]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-header">
+            <span class="qs-num">4</span>
+            <span class="qs-title">Verify on-chain in Solidity</span>
+          </div>
+          <div class="code-block solo">
+            <div class="code-header">
+              <span class="code-label">Solidity Contract Example</span>
+            </div>
+            <div class="code-body">
+<pre><span class="comment">// SPDX-License-Identifier: MIT</span>
+<span class="keyword">pragma solidity</span> ^0.8.20;
+
+<span class="keyword">import</span> <span class="string">"@openzeppelin/contracts/utils/cryptography/MerkleProof.sol"</span>;
+
+<span class="keyword">contract</span> <span class="property">Airdrop</span> {
+    <span class="keyword">bytes32</span> <span class="keyword">public</span> <span class="keyword">immutable</span> root;
+
+    <span class="keyword">constructor</span>(<span class="keyword">bytes32</span> _root) {
+        root = _root;  <span class="comment">// Set the root_hash from grep3 API</span>
+    }
+
+    <span class="keyword">function</span> <span class="property">claim</span>(
+        <span class="keyword">bytes32</span>[] <span class="keyword">calldata</span> proof,
+        <span class="keyword">address</span> addr,
+        <span class="keyword">uint256</span> amount
+    ) <span class="keyword">external</span> {
+        <span class="comment">// Reconstruct the leaf using double-hash (standard merkle tree format)</span>
+        <span class="keyword">bytes32</span> leaf = <span class="property">keccak256</span>(<span class="property">bytes.concat</span>(
+            <span class="property">keccak256</span>(<span class="property">abi.encode</span>(addr, amount))
+        ));
+
+        <span class="comment">// Verify the proof from grep3 API</span>
+        <span class="keyword">require</span>(<span class="property">MerkleProof.verify</span>(proof, root, leaf), <span class="string">"Invalid proof"</span>);
+
+        <span class="comment">// Process the claim (transfer tokens, etc.)</span>
+    }
+}</pre>
+            </div>
+          </div>
+          <div class="data-format" style="margin-top: 16px;">
+            <div class="format-title">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4m0-4h.01"/>
+              </svg>
+              Important Notes
+            </div>
+            <ul class="format-list">
+              <li>The <code>proof</code> array from the API response is passed directly to the contract</li>
+              <li>Leaf values must be encoded in the same order as submitted to the API</li>
+              <li>Uses double-hashing (<code>keccak256(bytes.concat(keccak256(...)))</code>) to prevent second preimage attacks</li>
+              <li>Store the <code>root_hash</code> in your contract at deployment or via a setter function</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <h2 class="section-title">Use Cases</h2>
+      </div>
+
+      <div class="use-cases">
+        <div class="use-case">
+          <div class="use-case-icon">&#127873;</div>
+          <h4>Token Airdrops</h4>
+          <p>Generate merkle trees for allowlists. Users claim tokens by providing their proof, verified on-chain with minimal gas.</p>
+        </div>
+        <div class="use-case">
+          <div class="use-case-icon">&#128274;</div>
+          <h4>Allowlist Minting</h4>
+          <p>NFT projects can verify wallet eligibility for presale mints without storing the entire list on-chain.</p>
+        </div>
+        <div class="use-case">
+          <div class="use-case-icon">&#9989;</div>
+          <h4>Data Verification</h4>
+          <p>Prove specific data was part of a larger dataset without revealing the entire dataset. Ideal for audits.</p>
+        </div>
+        <div class="use-case">
+          <div class="use-case-icon">&#128640;</div>
+          <h4>Rollup Commitments</h4>
+          <p>Batch multiple state transitions into a single merkle root for efficient layer 2 settlement.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-links">
+        <a href="https://github.com/whatl3y/grep3">GitHub</a>
+        <a href="https://grep3.com">grep3.com</a>
+      </div>
+      <div class="footer-brand">grep3 Merkle Tree API</div>
+    </footer>
+  </div>
+</body>
+</html>
