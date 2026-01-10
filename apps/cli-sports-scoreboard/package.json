@@ -1,0 +1,33 @@
+{
+  "name": "cli-sports-scoreboard",
+  "version": "0.0.1",
+  "description": "Real-time sports scoreboard CLI using ESPN API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "sports": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "npm run build && npm link",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "Lance Whatley <lance@moontography.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}
