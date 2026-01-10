@@ -1,0 +1,154 @@
+extends layout
+
+block content
+  .dashboard-header
+    if username
+      p.username-display @#{username}
+
+  .grid.grid-2
+    //- Left column
+    div
+      //- Stats
+      .card
+        h3 Overview
+        .stats
+          .stat
+            .stat-value= pendingTweets.length
+            .stat-label Pending
+          .stat
+            .stat-value= recentPosts.length
+            .stat-label Posted
+          .stat
+            .stat-value= voiceProfile ? voiceProfile.avgTweetLength : '—'
+            .stat-label Avg Length
+
+      //- Generate Form
+      .card
+        h3 Generate Tweets
+        form(onsubmit="generateTweets(event)")
+          .form-group
+            label(for="topic") Topic
+            input#topic(type="text" placeholder="e.g., building in public, crypto markets" required)
+          .form-group
+            label(for="count") Count
+            select#count
+              option(value="1") 1 tweet
+              option(value="3" selected) 3 tweets
+              option(value="5") 5 tweets
+          button.btn.btn-primary(type="submit") Generate
+
+      //- Voice Profile
+      .card
+        h3 Voice Profile
+        if voiceProfile
+          .voice-profile-item
+            strong Tone
+            span
+              each tone, i in voiceProfile.toneDescriptors
+                if i > 0
+                  | ,
+                | #{tone}
+          .voice-profile-item
+            strong Vocabulary
+            span= voiceProfile.vocabularyLevel
+          .voice-profile-item
+            strong Uses Emojis
+            span= voiceProfile.usesEmojis ? 'Yes' : 'No'
+          .voice-profile-item
+            strong Questions
+            span= (voiceProfile.questionFrequency * 100).toFixed(0) + '%'
+
+          if voiceProfile.commonPhrases && voiceProfile.commonPhrases.length > 0
+            .voice-profile-item
+              strong Common Phrases
+              span
+            .topics(style="margin-top: 8px;")
+              each phrase in voiceProfile.commonPhrases.slice(0, 6)
+                span.topic-tag= phrase
+
+          .actions(style="border-top: none; padding-top: 8px;")
+            button.btn.btn-sm(onclick="analyzeVoice()") Re-analyze Voice
+        else
+          .alert.alert-info
+            | No voice profile yet. Analyze your tweets to get started.
+          button.btn.btn-primary(onclick="analyzeVoice()") Analyze My Tweets
+
+    //- Right column
+    div
+      //- Pending Tweets
+      .card
+        h3 Pending Tweets
+        if pendingTweets.length === 0
+          .empty-state No pending tweets. Generate some to get started.
+        else
+          each tweet in pendingTweets.slice(0, 10)
+            .tweet-card(id=`tweet-${tweet.id}`)
+              .tweet-text(id=`tweet-text-${tweet.id}`)= tweet.text
+              .tweet-edit(id=`tweet-edit-${tweet.id}` style="display: none;")
+                .form-group(style="margin-bottom: 8px;")
+                  textarea(
+                    id=`tweet-textarea-${tweet.id}`
+                    rows="3"
+                    maxlength="280"
+                    style="resize: vertical; font-size: 14px;"
+                  )= tweet.text
+                  .char-count
+                    span(id=`char-count-${tweet.id}`)= tweet.text.length
+                    |  / 280
+              .tweet-meta
+                span.badge= tweet.topic || 'general'
+                span.badge= tweet.format || 'standard'
+                if tweet.engagement_score >= 70
+                  span.score.score-high= tweet.engagement_score
+                else if tweet.engagement_score >= 50
+                  span.score.score-medium= tweet.engagement_score
+                else
+                  span.score.score-low= tweet.engagement_score
+              .actions(id=`tweet-actions-${tweet.id}`)
+                button.btn.btn-sm(onclick=`startEditTweet(${tweet.id})`) Edit
+                button.btn.btn-success.btn-sm(onclick=`approvetweet(${tweet.id})`) Approve
+                button.btn.btn-danger.btn-sm(onclick=`rejectTweet(${tweet.id})`) Reject
+              .actions(id=`tweet-edit-actions-${tweet.id}` style="display: none;")
+                button.btn.btn-success.btn-sm(onclick=`saveTweet(${tweet.id})`) Save
+                button.btn.btn-sm(onclick=`cancelEditTweet(${tweet.id})`) Cancel
+
+      //- Recent Posts
+      .card
+        h3 Recently Posted
+        if recentPosts.length === 0
+          .empty-state No posts yet.
+        else
+          each tweet in recentPosts.slice(0, 5)
+            .tweet-card
+              .tweet-text= tweet.text
+              .tweet-meta
+                span Posted #{new Date(tweet.posted_at).toLocaleDateString()}
+                if tweet.twitter_tweet_id
+                  a.tweet-link(href=`https://twitter.com/${username}/status/${tweet.twitter_tweet_id}` target="_blank" rel="noopener") View on X
+
+      //- Schedule
+      .card
+        h3 Schedule
+        if schedule
+          .schedule-item
+            strong Tweets/day
+            span= schedule.tweets_per_day
+          .schedule-item
+            strong Min hours between
+            span= schedule.min_hours_between_posts
+          .schedule-item
+            strong Auto-post
+            span= schedule.auto_post ? 'Enabled' : 'Manual approval'
+          if schedule.topics && schedule.topics.length > 0
+            .schedule-item
+              strong Topics
+              span
+            .topics(style="margin-top: 8px;")
+              each topic in schedule.topics
+                span.topic-tag= topic
+        else
+          .empty-state
+            | Using defaults: #{config.tweetsPerDay} tweets/day
+          .topics(style="margin-top: 12px; justify-content: center;")
+            each topic in config.topics
+              span.topic-tag= topic

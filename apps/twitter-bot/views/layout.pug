@@ -1,0 +1,121 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title || 'Twitter Bot'
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet")
+    link(rel="stylesheet" href="/styles/main.css")
+  body
+    .container
+      header.site-header
+        h1
+          a(href="/") Twitter Bot
+        p.tagline AI-powered tweet generation with your authentic voice
+
+      main
+        block content
+
+      footer.site-footer
+        p Tweets generated using Claude AI
+        p Voice analysis learns from your posting history
+
+    script.
+      async function approvetweet(id) {
+        try {
+          const res = await fetch(`/api/tweets/${id}/approve`, { method: 'POST' });
+          if (res.ok) location.reload();
+        } catch (e) { alert('Failed to approve: ' + e.message); }
+      }
+
+      async function rejectTweet(id) {
+        try {
+          const res = await fetch(`/api/tweets/${id}/reject`, { method: 'POST' });
+          if (res.ok) location.reload();
+        } catch (e) { alert('Failed to reject: ' + e.message); }
+      }
+
+      async function generateTweets(e) {
+        e.preventDefault();
+        const topic = document.getElementById('topic').value;
+        const count = document.getElementById('count').value;
+        try {
+          const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, count: parseInt(count) })
+          });
+          if (res.ok) {
+            alert('Tweets queued for generation!');
+            location.reload();
+          }
+        } catch (e) { alert('Failed: ' + e.message); }
+      }
+
+      async function analyzeVoice() {
+        try {
+          const res = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ forceRefresh: true })
+          });
+          if (res.ok) alert('Voice analysis queued!');
+        } catch (e) { alert('Failed: ' + e.message); }
+      }
+
+      function startEditTweet(id) {
+        document.getElementById(`tweet-text-${id}`).style.display = 'none';
+        document.getElementById(`tweet-edit-${id}`).style.display = 'block';
+        document.getElementById(`tweet-actions-${id}`).style.display = 'none';
+        document.getElementById(`tweet-edit-actions-${id}`).style.display = 'flex';
+        const textarea = document.getElementById(`tweet-textarea-${id}`);
+        textarea.focus();
+        updateCharCount(id);
+        textarea.oninput = () => updateCharCount(id);
+      }
+
+      function updateCharCount(id) {
+        const textarea = document.getElementById(`tweet-textarea-${id}`);
+        const countEl = document.getElementById(`char-count-${id}`);
+        const len = textarea.value.length;
+        countEl.textContent = len;
+        countEl.parentElement.className = 'char-count' + (len > 260 ? (len > 280 ? ' error' : ' warning') : '');
+      }
+
+      function cancelEditTweet(id) {
+        const originalText = document.getElementById(`tweet-text-${id}`).textContent;
+        document.getElementById(`tweet-textarea-${id}`).value = originalText;
+        document.getElementById(`char-count-${id}`).textContent = originalText.length;
+        document.getElementById(`tweet-text-${id}`).style.display = 'block';
+        document.getElementById(`tweet-edit-${id}`).style.display = 'none';
+        document.getElementById(`tweet-actions-${id}`).style.display = 'flex';
+        document.getElementById(`tweet-edit-actions-${id}`).style.display = 'none';
+      }
+
+      async function saveTweet(id) {
+        const text = document.getElementById(`tweet-textarea-${id}`).value.trim();
+        if (!text) {
+          alert('Tweet cannot be empty');
+          return;
+        }
+        if (text.length > 280) {
+          alert('Tweet exceeds 280 characters');
+          return;
+        }
+        try {
+          const res = await fetch(`/api/tweets/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          if (res.ok) {
+            document.getElementById(`tweet-text-${id}`).textContent = text;
+            cancelEditTweet(id);
+          } else {
+            const data = await res.json();
+            alert('Failed to save: ' + (data.error || 'Unknown error'));
+          }
+        } catch (e) { alert('Failed to save: ' + e.message); }
+      }

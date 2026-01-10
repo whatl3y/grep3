@@ -51,6 +51,25 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/cli-sports-scoreboard:
+    dependencies:
+      axios:
+        specifier: ^1.4.0
+        version: 1.13.2
+      commander:
+        specifier: ^11.0.0
+        version: 11.1.0
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.6.1
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.10.4
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   apps/crypto-news:
     dependencies:
       '@grep3/core':
@@ -509,25 +528,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/sports-cli:
-    dependencies:
-      axios:
-        specifier: ^1.4.0
-        version: 1.13.2
-      commander:
-        specifier: ^11.0.0
-        version: 11.1.0
-      dotenv:
-        specifier: ^16.3.1
-        version: 16.6.1
-    devDependencies:
-      '@types/node':
-        specifier: ^24.10.1
-        version: 24.10.4
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   apps/tornado-api:
     dependencies:
       '@grep3/core':
@@ -614,6 +614,73 @@ importers:
         version: 5.2.0
       ts-node:
         specifier: ^10.0.0
+        version: 10.9.2(@types/node@24.10.4)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  apps/twitter-bot:
+    dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.52.0
+        version: 0.52.0
+      '@grep3/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      bunyan:
+        specifier: ^1.8.15
+        version: 1.8.15
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.8.2
+      kysely:
+        specifier: ^0.28.8
+        version: 0.28.9
+      minimist:
+        specifier: ^1.2.8
+        version: 1.2.8
+      node-resque:
+        specifier: ^9.3.8
+        version: 9.3.8
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
+      pug:
+        specifier: ^3.0.3
+        version: 3.0.3
+      twitter-api-v2:
+        specifier: ^1.18.2
+        version: 1.28.0
+    devDependencies:
+      '@types/bunyan':
+        specifier: ^1.8.11
+        version: 1.8.11
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
+      '@types/minimist':
+        specifier: ^1.2.5
+        version: 1.2.5
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.10.4
+      '@types/pg':
+        specifier: ^8.15.6
+        version: 8.16.0
+      mocha:
+        specifier: ^11.7.5
+        version: 11.7.5
+      ts-node:
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.4)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
@@ -726,6 +793,10 @@ packages:
 
   '@adraffy/ens-normalize@1.10.1':
     resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
+
+  '@anthropic-ai/sdk@0.52.0':
+    resolution: {integrity: sha512-d4c+fg+xy9e46c8+YnrrgIQR45CZlAi7PwdzIfDXDM6ACxEZli1/fxhURsq30ZpMZy6LvSkr41jGq5aF5TD7rQ==}
+    hasBin: true
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -5601,6 +5672,9 @@ packages:
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
 
+  twitter-api-v2@1.28.0:
+    resolution: {integrity: sha512-VBmiAMylCEr94OChaHJ+0TBrOZNrduwWUe7QLoa/KdOdv1fNiToJ0xZGOrNKFd2B7jrAdAkfUW6yA5LuXYOYLQ==}
+
   type-check@0.3.2:
     resolution: {integrity: sha512-ZCmOJdvOWDBYJlzAoFkC+Q0+bUyEOS1ltgp1MGU03fqHG+dbi9tBFU2Rd9QKiDZFAYrhPh2JUf7rZRIuHRKtOg==}
     engines: {node: '>= 0.8.0'}
@@ -6112,6 +6186,8 @@ packages:
 snapshots:
 
   '@adraffy/ens-normalize@1.10.1': {}
+
+  '@anthropic-ai/sdk@0.52.0': {}
 
   '@aws-crypto/crc32@5.2.0':
     dependencies:
@@ -12564,6 +12640,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   tweetnacl@0.14.5: {}
+
+  twitter-api-v2@1.28.0: {}
 
   type-check@0.3.2:
     dependencies:

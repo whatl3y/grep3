@@ -1,0 +1,180 @@
+services:
+  # =============================================================================
+  # WEB SERVER - Main interface for predictions
+  # =============================================================================
+  # Usage: docker compose up web
+  # Access: http://localhost:8096
+  web:
+    build: .
+    ports:
+      - "8096:8096"
+    volumes:
+      - sports-data:/app/data
+    environment:
+      - PORT=8096
+    restart: unless-stopped
+
+  # =============================================================================
+  # DATA PIPELINE - Run these to prepare data and train models
+  # =============================================================================
+
+  # Update data for NCAA Basketball (from Sports-Reference)
+  # Usage: docker compose run --rm update-ncaab
+  update-ncaab:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "update-data", "--sport", "ncaab"]
+
+  # Update data for NFL (from ESPN API)
+  # Usage: docker compose run --rm update-nfl
+  update-nfl:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "update-data", "--sport", "nfl"]
+
+  # Update data for NCAA Football (from ESPN API)
+  # Usage: docker compose run --rm update-ncaaf
+  update-ncaaf:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "update-data", "--sport", "ncaaf"]
+
+  # Train NCAA Basketball model
+  # Usage: docker compose run --rm train-ncaab
+  train-ncaab:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "train", "--sport", "ncaab"]
+
+  # Train NFL model
+  # Usage: docker compose run --rm train-nfl
+  train-nfl:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "train", "--sport", "nfl"]
+
+  # Train NCAA Football model
+  # Usage: docker compose run --rm train-ncaaf
+  train-ncaaf:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "train", "--sport", "ncaaf"]
+
+  # =============================================================================
+  # UTILITY SERVICES
+  # =============================================================================
+
+  # Run CLI predictions directly
+  # Usage: docker compose run --rm predict Duke "North Carolina" --sport ncaab
+  # Usage: docker compose run --rm predict "Kansas City" Buffalo --sport nfl
+  predict:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "predict"]
+
+  # Show team rankings
+  # Usage: docker compose run --rm rankings --sport ncaab
+  # Usage: docker compose run --rm rankings --sport nfl
+  rankings:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "rankings"]
+
+  # List available teams
+  # Usage: docker compose run --rm teams --sport ncaab
+  # Usage: docker compose run --rm teams --sport nfl
+  teams:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["sports-predict", "teams"]
+
+  # =============================================================================
+  # FULL PIPELINE - Backfill all data, train all models
+  # =============================================================================
+  # Usage: docker compose run --rm setup (runs all update-data + train, then exits)
+  setup:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "========================================="
+        echo "Sports Predict - Initial Setup"
+        echo "========================================="
+        echo ""
+        echo "Step 1/6: Updating NCAA Basketball data..."
+        sports-predict update-data --sport ncaab --start 2020 --end 2026
+        echo ""
+        echo "Step 2/6: Updating NFL data..."
+        sports-predict update-data --sport nfl --start 2020 --end 2025
+        echo ""
+        echo "Step 3/6: Updating NCAA Football data..."
+        sports-predict update-data --sport ncaaf --start 2020 --end 2025
+        echo ""
+        echo "Step 4/6: Training NCAA Basketball model..."
+        sports-predict train --sport ncaab
+        echo ""
+        echo "Step 5/6: Training NFL model..."
+        sports-predict train --sport nfl
+        echo ""
+        echo "Step 6/6: Training NCAA Football model..."
+        sports-predict train --sport ncaaf
+        echo ""
+        echo "========================================="
+        echo "Setup complete! You can now run:"
+        echo "  docker compose up web"
+        echo "========================================="
+
+  # Setup for a single sport (faster for testing)
+  # Usage: docker compose run --rm setup-ncaab
+  setup-ncaab:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Setting up NCAA Basketball..."
+        sports-predict update-data --sport ncaab --start 2020 --end 2026
+        sports-predict train --sport ncaab
+        echo "NCAA Basketball setup complete!"
+
+  # Usage: docker compose run --rm setup-nfl
+  setup-nfl:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Setting up NFL..."
+        sports-predict update-data --sport nfl --start 2020 --end 2025
+        sports-predict train --sport nfl
+        echo "NFL setup complete!"
+
+  # Usage: docker compose run --rm setup-ncaaf
+  setup-ncaaf:
+    build: .
+    volumes:
+      - sports-data:/app/data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Setting up NCAA Football..."
+        sports-predict update-data --sport ncaaf --start 2020 --end 2025
+        sports-predict train --sport ncaaf
+        echo "NCAA Football setup complete!"
+
+volumes:
+  sports-data:
+    name: sports-predict-data

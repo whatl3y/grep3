@@ -5,6 +5,7 @@ export interface LeagueConfig {
   sport: string;
   leagueSlug: string;
   displayName: string;
+  groups?: string; // ESPN API group ID to fetch all games (e.g., '80' for FBS, '50' for D1 basketball)
 }
 
 export interface Team {

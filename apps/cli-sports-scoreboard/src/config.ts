@@ -30,12 +30,14 @@ export const LEAGUES: Record<LeagueCode, LeagueConfig> = {
     sport: 'football',
     leagueSlug: 'college-football',
     displayName: 'NCAAF',
+    groups: '80', // FBS group ID - required to get all games, not just ranked teams
   },
   ncaab: {
     code: 'ncaab',
     sport: 'basketball',
     leagueSlug: 'mens-college-basketball',
     displayName: 'NCAAB',
+    groups: '50', // Division I group ID - required to get all games, not just ranked teams
   },
 };
 

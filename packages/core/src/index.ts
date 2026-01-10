@@ -18,6 +18,9 @@ export * from "./database/models/merkletreeValues";
 export * from "./database/models/cryptoNewsSources";
 export * from "./database/models/cryptoNewsItems";
 export * from "./database/models/cryptoDailySummaries";
+export * from "./database/models/twitterBotVoiceProfiles";
+export * from "./database/models/twitterBotGeneratedTweets";
+export * from "./database/models/twitterBotPostingSchedules";
 
 // Redis
 export { createRedisClient, getRedisOptions } from "./redis";

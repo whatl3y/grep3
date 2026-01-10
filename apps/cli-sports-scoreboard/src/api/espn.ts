@@ -13,6 +13,9 @@ export async function fetchScoreboard(
   if (date) {
     params.dates = date;
   }
+  if (config.groups) {
+    params.groups = config.groups;
+  }
 
   try {
     const response = await axios.get<ScoreboardResponse>(url, {

@@ -311,6 +311,62 @@ services:
     volumes:
       - ./apps/crypto-news/dist:/usr/grep3/apps/crypto-news/dist
 
+  twitter-bot-web:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/twitter-bot/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8010:8010"
+    env_file:
+      - ./apps/twitter-bot/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://twitter-bot-web:8010
+      - PORT=8010
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/twitter-bot/dist:/app/dist
+      - ./apps/twitter-bot/views:/app/views
+      - ./apps/twitter-bot/public:/app/public
+
+  twitter-bot-workers:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/twitter-bot/Dockerfile.worker
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/twitter-bot/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - HOST=http://twitter-bot-web:8010
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+    volumes:
+      - ./apps/twitter-bot/dist:/app/dist
+
+  twitter-bot-scheduler:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/twitter-bot/Dockerfile.scheduler
+    depends_on:
+      - redis
+    env_file:
+      - ./apps/twitter-bot/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=redis:6379
+    volumes:
+      - ./apps/twitter-bot/dist:/app/dist
+
 volumes:
   ncaab-predict-data:
     name: ncaab-predict-data

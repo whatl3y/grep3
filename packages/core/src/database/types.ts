@@ -15,6 +15,9 @@ export interface Database {
   crypto_news_sources: CryptoNewsSourceTable;
   crypto_news_items: CryptoNewsItemTable;
   crypto_daily_summaries: CryptoDailySummaryTable;
+  twitter_bot_voice_profiles: TwitterBotVoiceProfileTable;
+  twitter_bot_generated_tweets: TwitterBotGeneratedTweetTable;
+  twitter_bot_posting_schedules: TwitterBotPostingScheduleTable;
 }
 
 export interface RepoTable {
@@ -165,3 +168,85 @@ export type CryptoNewsItemUpdate = Updateable<CryptoNewsItemTable>;
 export type CryptoDailySummary = Selectable<CryptoDailySummaryTable>;
 export type NewCryptoDailySummary = Insertable<CryptoDailySummaryTable>;
 export type CryptoDailySummaryUpdate = Updateable<CryptoDailySummaryTable>;
+
+// Twitter Bot Types
+
+export interface TwitterBotVoiceProfileData {
+  avgTweetLength: number;
+  avgSentenceLength: number;
+  usesEmojis: boolean;
+  emojiFrequency: number;
+  usesHashtags: boolean;
+  hashtagFrequency: number;
+  usesMentions: boolean;
+  mentionFrequency: number;
+  toneDescriptors: string[];
+  commonPhrases: string[];
+  vocabularyLevel: "simple" | "moderate" | "advanced";
+  sentenceStructures: string[];
+  topicDistribution: Record<string, number>;
+  questionFrequency: number;
+  exclamationFrequency: number;
+  threadFrequency: number;
+  bestPerformingPatterns: Array<{
+    pattern: string;
+    description: string;
+    avgEngagement: number;
+    examples: string[];
+  }>;
+  postingTimePreferences: number[];
+  sampleTweets: string[];
+}
+
+export interface TwitterBotVoiceProfileTable {
+  id: Generated<number>;
+  twitter_username: string;
+  profile_data: ColumnType<TwitterBotVoiceProfileData, string, string>;
+  tweets_analyzed: number;
+  last_analyzed_at: ColumnType<Date | null, string | undefined, string | undefined>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export interface TwitterBotGeneratedTweetTable {
+  id: Generated<number>;
+  twitter_username: string;
+  text: string;
+  topic: string | null;
+  format: string | null;
+  engagement_score: number | null;
+  reasoning: string | null;
+  status: ColumnType<string, string, string>; // pending, approved, rejected, posted, failed
+  scheduled_for: ColumnType<Date | null, string | undefined, string | undefined>;
+  posted_at: ColumnType<Date | null, string | undefined, string | undefined>;
+  twitter_tweet_id: string | null;
+  post_metrics: ColumnType<Record<string, number> | null, string | undefined, string | undefined>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export interface TwitterBotPostingScheduleTable {
+  id: Generated<number>;
+  twitter_username: string;
+  tweets_per_day: number;
+  min_hours_between_posts: number;
+  preferred_hours: ColumnType<number[], string | undefined, string | undefined>;
+  topics: ColumnType<string[], string, string>;
+  auto_post: ColumnType<boolean, boolean | undefined, boolean>;
+  is_active: ColumnType<boolean, boolean | undefined, boolean>;
+  last_post_at: ColumnType<Date | null, string | undefined, string | undefined>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export type TwitterBotVoiceProfile = Selectable<TwitterBotVoiceProfileTable>;
+export type NewTwitterBotVoiceProfile = Insertable<TwitterBotVoiceProfileTable>;
+export type TwitterBotVoiceProfileUpdate = Updateable<TwitterBotVoiceProfileTable>;
+
+export type TwitterBotGeneratedTweet = Selectable<TwitterBotGeneratedTweetTable>;
+export type NewTwitterBotGeneratedTweet = Insertable<TwitterBotGeneratedTweetTable>;
+export type TwitterBotGeneratedTweetUpdate = Updateable<TwitterBotGeneratedTweetTable>;
+
+export type TwitterBotPostingSchedule = Selectable<TwitterBotPostingScheduleTable>;
+export type NewTwitterBotPostingSchedule = Insertable<TwitterBotPostingScheduleTable>;
+export type TwitterBotPostingScheduleUpdate = Updateable<TwitterBotPostingScheduleTable>;
