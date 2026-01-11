@@ -62,6 +62,7 @@ class RiskAnalyzer:
         team_b_stats: pd.Series,
         prediction: dict,
         location: str = "neutral",
+        postseason: bool = False,
     ) -> dict:
         """
         Analyze risk factors for a matchup.
@@ -71,12 +72,23 @@ class RiskAnalyzer:
             team_b_stats: Stats for team B
             prediction: Prediction dict from SpreadPredictor
             location: Game location
+            postseason: Whether this is a postseason/tournament game
 
         Returns:
             Dict with risk analysis
         """
         risk_factors = []
         confidence_adjustments = []
+
+        # Postseason adjustment - tournament games are often tighter
+        if postseason:
+            risk_factors.append({
+                "factor": "Postseason game",
+                "description": "Tournament/playoff games tend to be closer with increased pressure",
+                "severity": "medium",
+            })
+            # Slightly reduce variance for postseason (teams play more carefully)
+            confidence_adjustments.append(0.95)
 
         # 1. Three-point shooting volatility
         a_3pt = _get_scalar(team_a_stats, "fg3_pct", 0.33)

@@ -126,8 +126,10 @@ def create_app():
 
         away_team = request.form.get("away_team", "").strip()
         home_team = request.form.get("home_team", "").strip()
+        postseason = request.form.get("postseason") == "on"
 
-        logger.info(f"POST /predict - {league.value.upper()} prediction request: {away_team} @ {home_team}")
+        game_type = "Postseason" if postseason else "Regular season"
+        logger.info(f"POST /predict - {league.value.upper()} {game_type} prediction: {away_team} @ {home_team}")
 
         # Validation
         if not away_team or not home_team:
@@ -169,6 +171,7 @@ def create_app():
                 team_a=away_team,
                 team_b=home_team,
                 location="away",  # team_a is away, so home field/court advantage goes to team_b
+                postseason=postseason,
             )
 
             elapsed = time.time() - start_time

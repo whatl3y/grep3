@@ -57,6 +57,7 @@ class MatchupAnalyzer:
         team_b: str,
         location: str = "neutral",
         season: Optional[int] = None,
+        postseason: bool = False,
     ) -> Optional[dict]:
         """
         Perform complete matchup analysis.
@@ -66,6 +67,7 @@ class MatchupAnalyzer:
             team_b: Name or ID of team B
             location: 'home' (for A), 'away' (for A), or 'neutral'
             season: Season to use for stats (default: most recent)
+            postseason: Whether this is a postseason/playoff game
 
         Returns:
             Complete analysis dict or None if teams not found
@@ -130,11 +132,11 @@ class MatchupAnalyzer:
 
         # Create matchup features
         features = self.feature_builder.create_matchup_features(
-            team_a_stats, team_b_stats, location
+            team_a_stats, team_b_stats, location, postseason=postseason
         )
 
         # Get prediction
-        prediction = self.predictor.predict(features)
+        prediction = self.predictor.predict(features, postseason=postseason)
 
         # Calculate expected scores
         team_a_score, team_b_score = self.risk_analyzer.calculate_expected_score(
@@ -145,7 +147,7 @@ class MatchupAnalyzer:
 
         # Risk analysis
         risk = self.risk_analyzer.analyze_matchup_risk(
-            team_a_stats, team_b_stats, prediction, location
+            team_a_stats, team_b_stats, prediction, location, postseason=postseason
         )
 
         # Key factors
@@ -166,6 +168,7 @@ class MatchupAnalyzer:
             },
             "location": location,
             "season": season,
+            "postseason": postseason,
             "using_stale_data": using_stale_data,
             "prediction": prediction,
             "risk": risk,
@@ -206,6 +209,11 @@ class MatchupAnalyzer:
             "away": f"@ {team_b['name']}",
             "neutral": "Neutral Site",
         }[location]
+
+        # Add postseason indicator
+        postseason = analysis.get("postseason", False)
+        if postseason:
+            location_text += " [bold magenta](Postseason)[/bold magenta]"
 
         # Get team records from stats
         a_wins = int(team_a['stats'].get('wins', 0) or 0)

@@ -60,6 +60,7 @@ class FootballRiskAnalyzer:
         team_b_stats: pd.Series,
         prediction: dict,
         location: str = "neutral",
+        postseason: bool = False,
     ) -> dict:
         """
         Analyze risk factors for a football matchup.
@@ -69,12 +70,23 @@ class FootballRiskAnalyzer:
             team_b_stats: Stats for team B
             prediction: Prediction dict from SpreadPredictor
             location: Game location
+            postseason: Whether this is a postseason/playoff game
 
         Returns:
             Dict with risk analysis
         """
         risk_factors = []
         confidence_adjustments = []
+
+        # Postseason adjustment - playoff games have unique dynamics
+        if postseason:
+            risk_factors.append({
+                "factor": "Playoff game",
+                "description": "Playoff intensity often leads to tighter, lower-scoring games",
+                "severity": "medium",
+            })
+            # Reduce variance slightly for postseason (more conservative play)
+            confidence_adjustments.append(0.92)
 
         # 1. Turnover-prone teams
         a_turnover_diff = _get_scalar(team_a_stats, "turnover_diff", 0)

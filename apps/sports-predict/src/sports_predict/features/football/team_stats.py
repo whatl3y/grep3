@@ -41,6 +41,8 @@ class FootballFeatureBuilder:
         "recent_point_diff_delta",
         # Home field advantage
         "home_advantage",
+        # Game context
+        "is_postseason",
         # Expected differential
         "expected_diff",
     ]
@@ -227,6 +229,7 @@ class FootballFeatureBuilder:
         team1_stats: pd.Series,
         team2_stats: pd.Series,
         team1_home: bool = True,
+        postseason: bool = False,
     ) -> Dict[str, float]:
         """Create features for a specific matchup.
 
@@ -234,6 +237,7 @@ class FootballFeatureBuilder:
             team1_stats: Statistics for team 1
             team2_stats: Statistics for team 2
             team1_home: Whether team 1 is the home team
+            postseason: Whether this is a postseason/playoff game
 
         Returns:
             Dictionary of matchup features
@@ -303,9 +307,16 @@ class FootballFeatureBuilder:
             - team2_stats.get("recent_point_diff", 0)
         )
 
-        # Home field advantage
+        # Home field advantage (reduced in postseason)
         home_advantage = self.config.home_advantage_points
+        if postseason:
+            # Postseason games have reduced home field advantage
+            # Playoff teams are more experienced and less affected by crowd
+            home_advantage *= 0.6
         features["home_advantage"] = home_advantage if team1_home else -home_advantage
+
+        # Postseason flag - games tend to be tighter, more conservative
+        features["is_postseason"] = 1.0 if postseason else 0.0
 
         # Expected point differential
         features["expected_diff"] = (

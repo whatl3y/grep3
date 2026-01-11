@@ -52,6 +52,11 @@ def predict(
         "--season", "-s",
         help="Season year to use for stats (default: most recent)",
     ),
+    postseason: bool = typer.Option(
+        False,
+        "--postseason", "-p",
+        help="Postseason/playoff game (adjusts for higher stakes, tighter games)",
+    ),
 ):
     """
     Predict the outcome of a matchup between two teams.
@@ -59,11 +64,11 @@ def predict(
     Examples:
         sports-predict predict Duke "North Carolina" --sport ncaab
         sports-predict predict "Kansas City" Buffalo --sport nfl -l home
-        sports-predict predict Alabama Georgia --sport ncaaf
+        sports-predict predict Alabama Georgia --sport ncaaf --postseason
     """
     league = parse_league(sport)
     analyzer = MatchupAnalyzer(league)
-    analysis = analyzer.analyze(team_a, team_b, location, season)
+    analysis = analyzer.analyze(team_a, team_b, location, season, postseason=postseason)
 
     if analysis:
         analyzer.print_analysis(analysis)

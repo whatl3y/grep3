@@ -345,6 +345,18 @@
             color: var(--grey-400);
         }
 
+        .postseason-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--purple-500), var(--purple-600));
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
         /* Score Prediction */
         .score-prediction {
             padding: 32px;
@@ -744,6 +756,77 @@
             color: var(--grey-400);
         }
 
+        /* Postseason Toggle */
+        .postseason-toggle {
+            margin-bottom: 24px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            padding: 16px 20px;
+            background: var(--grey-50);
+            border-radius: var(--radius);
+            border: 1px solid var(--grey-200);
+            transition: all 0.2s ease;
+        }
+
+        .toggle-container:hover {
+            border-color: var(--grey-300);
+            background: var(--white);
+        }
+
+        .toggle-container input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--grey-300);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: var(--white);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .toggle-container input[type="checkbox"]:checked + .toggle-slider {
+            background: var(--grey-800);
+        }
+
+        .toggle-container input[type="checkbox"]:checked + .toggle-slider::after {
+            transform: translateX(20px);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--grey-800);
+            display: block;
+        }
+
+        .toggle-hint {
+            font-size: 12px;
+            color: var(--grey-500);
+            display: block;
+            margin-top: 4px;
+        }
+
         /* Footer */
         footer {
             text-align: center;
@@ -828,6 +911,16 @@
                     </div>
                 </div>
 
+                <!-- Postseason Toggle -->
+                <div class="postseason-toggle">
+                    <label class="toggle-container">
+                        <input type="checkbox" name="postseason" id="postseason" {% if analysis and analysis.postseason %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Postseason Game</span>
+                        <span class="toggle-hint">Playoff/tournament games are typically tighter with reduced home advantage</span>
+                    </label>
+                </div>
+
                 <button type="submit" class="submit-btn" id="submit-btn">
                     <span class="btn-spinner"></span>
                     <span class="btn-text">Predict Outcome</span>
@@ -856,6 +949,7 @@
                             </div>
                         </div>
                         <div class="matchup-location">
+                            {% if analysis.postseason %}<span class="postseason-badge">Postseason</span> &bull; {% endif %}
                             {% if analysis.location == 'home' %}
                             @ {{ analysis.team_a.name }}
                             {% elif analysis.location == 'away' %}

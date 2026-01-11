@@ -96,6 +96,7 @@ class BasketballFeatureBuilder:
         team_a_stats: pd.Series,
         team_b_stats: pd.Series,
         location: str = "neutral",
+        postseason: bool = False,
     ) -> dict:
         """
         Create feature vector for a matchup between two teams.
@@ -104,6 +105,7 @@ class BasketballFeatureBuilder:
             team_a_stats: Stats for team A (the team we're predicting for)
             team_b_stats: Stats for team B (opponent)
             location: 'home', 'away', or 'neutral' for team A
+            postseason: Whether this is a postseason/playoff game
 
         Returns:
             Dict of features for the matchup
@@ -173,6 +175,9 @@ class BasketballFeatureBuilder:
         features["is_home"] = 1 if location == "home" else 0
         features["is_away"] = 1 if location == "away" else 0
         features["is_neutral"] = 1 if location == "neutral" else 0
+
+        # Postseason flag - games tend to be tighter with less home advantage
+        features["is_postseason"] = 1 if postseason else 0
 
         return features
 

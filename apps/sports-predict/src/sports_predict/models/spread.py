@@ -110,6 +110,7 @@ class SpreadPredictor:
         self,
         features: dict,
         include_intervals: bool = True,
+        postseason: bool = False,
     ) -> dict:
         """
         Predict point spread for a matchup.
@@ -117,13 +118,14 @@ class SpreadPredictor:
         Args:
             features: Matchup feature dictionary
             include_intervals: Whether to include prediction intervals
+            postseason: Whether this is a postseason/playoff game
 
         Returns:
             Dict with predictions
         """
         if not self.is_loaded:
             if not self.load():
-                return self._fallback_prediction(features)
+                return self._fallback_prediction(features, postseason=postseason)
 
         # Create feature vector
         X = self._prepare_features(features)
@@ -131,21 +133,36 @@ class SpreadPredictor:
         # Main prediction
         spread = float(self.model.predict(X)[0])
 
+        # Postseason adjustment: games tend to be tighter
+        # Spreads compress toward zero in high-stakes games
+        if postseason:
+            # Compress spread toward zero by ~15-20%
+            # Teams play more conservatively, closer games
+            spread = spread * 0.85
+
         result = {
             "spread": round(spread, 1),
             "team_a_score": None,  # Will be calculated by analysis module
             "team_b_score": None,
+            "postseason": postseason,
         }
 
         # Add prediction intervals
         if include_intervals and self.model_lower and self.model_upper:
             lower = float(self.model_lower.predict(X)[0])
             upper = float(self.model_upper.predict(X)[0])
+            # Also compress intervals for postseason
+            if postseason:
+                lower = lower * 0.85
+                upper = upper * 0.85
             result["spread_lower"] = round(lower, 1)
             result["spread_upper"] = round(upper, 1)
         else:
             # Use sport-specific score variance
             variance = self.config.score_variance_std
+            # Postseason games have slightly less variance (more predictable outcomes)
+            if postseason:
+                variance = variance * 0.9
             result["spread_lower"] = round(spread - variance, 1)
             result["spread_upper"] = round(spread + variance, 1)
 
@@ -168,7 +185,7 @@ class SpreadPredictor:
             X.append(val)
         return np.array([X])
 
-    def _fallback_prediction(self, features: dict) -> dict:
+    def _fallback_prediction(self, features: dict, postseason: bool = False) -> dict:
         """
         Simple fallback prediction when model isn't available.
 
@@ -183,10 +200,17 @@ class SpreadPredictor:
 
         # Home field/court advantage (sport-specific)
         home_advantage = self.config.home_advantage_points
+        # Reduce home advantage for postseason
+        if postseason:
+            home_advantage *= 0.6
         if features.get("is_home"):
             spread += home_advantage
         elif features.get("is_away"):
             spread -= home_advantage
+
+        # Compress spread for postseason (tighter games)
+        if postseason:
+            spread = spread * 0.85
 
         spread = round(spread, 1)
 
@@ -195,6 +219,9 @@ class SpreadPredictor:
         win_prob = 1 / (1 + np.exp(-spread / scale_factor))
 
         variance = self.config.score_variance_std
+        if postseason:
+            variance = variance * 0.9
+
         return {
             "spread": spread,
             "spread_lower": spread - variance,
@@ -203,6 +230,7 @@ class SpreadPredictor:
             "win_prob_b": round(1 - win_prob, 3),
             "team_a_score": None,
             "team_b_score": None,
+            "postseason": postseason,
             "_fallback": True,
         }
 
