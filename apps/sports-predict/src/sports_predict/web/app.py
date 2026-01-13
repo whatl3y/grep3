@@ -60,11 +60,12 @@ def create_app():
         return []
 
     def get_league_info():
-        """Get list of league info for template."""
-        return [
+        """Get list of league info for template, sorted alphabetically by label."""
+        leagues_info = [
             {"value": league.value, "label": league.value.upper(), "config": get_sport_config(league)}
             for league in LEAGUES
         ]
+        return sorted(leagues_info, key=lambda x: x["label"])
 
     # Pre-load teams for default league on startup
     default_teams = get_teams_list(DEFAULT_LEAGUE)

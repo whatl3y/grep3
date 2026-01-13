@@ -224,17 +224,17 @@ services:
     volumes:
       - ./apps/liquidity/client/dist:/app/dist
 
-  ncaab-predict:
+  sports-predict:
     restart: always
     build:
-      context: ./apps/ncaab-predict
+      context: ./apps/sports-predict
       dockerfile: Dockerfile
     ports:
       - "8096:8096"
     environment:
       - PORT=8096
     volumes:
-      - ncaab-predict-data:/app/data
+      - sports-predict-data:/app/data
 
   prices-api:
     restart: always
@@ -368,5 +368,5 @@ services:
       - ./apps/twitter-bot/dist:/app/dist
 
 volumes:
-  ncaab-predict-data:
-    name: ncaab-predict-data
+  sports-predict-data:
+    name: sports-predict-data

@@ -87,15 +87,22 @@ class FootballFeatureBuilder:
         # Calculate adjusted ratings
         df = self.strength_calc.calculate_adjusted_ratings(df, games)
 
-        # Add recent form metrics
+        # Add recent form metrics (only if not already present)
         recent_form = self.strength_calc.calculate_recent_form(games)
         if not recent_form.empty:
-            df = df.merge(
-                recent_form,
-                on=["season", "team_id"],
-                how="left",
-                suffixes=("", "_form"),
-            )
+            # Only merge if recent_form columns don't already exist
+            recent_form_cols = [c for c in recent_form.columns if c not in ["season", "team_id"]]
+            if not any(col in df.columns for col in recent_form_cols):
+                df = df.merge(
+                    recent_form,
+                    on=["season", "team_id"],
+                    how="left",
+                    suffixes=("", "_form"),
+                )
+
+        # Clean up any duplicate columns that might have been created
+        if df.columns.duplicated().any():
+            df = df.loc[:, ~df.columns.duplicated()]
 
         # Fill missing values with reasonable defaults
         df = self._fill_missing_values(df)
@@ -339,7 +346,7 @@ class FootballFeatureBuilder:
         """Prepare training data from team stats and game results.
 
         Args:
-            team_stats: Team statistics DataFrame
+            team_stats: Team statistics DataFrame (should already have features built)
             games: Game results DataFrame
 
         Returns:
@@ -348,8 +355,8 @@ class FootballFeatureBuilder:
         if games.empty:
             return pd.DataFrame()
 
-        # Build team features first
-        team_features = self.build_team_features(team_stats, games)
+        # Use provided team_stats directly - features should already be built by caller
+        team_features = team_stats
 
         training_rows = []
 

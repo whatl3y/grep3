@@ -1,1 +1,1 @@
-"""Web server module for NCAA basketball predictions."""
+"""Web server module for sports predictions."""

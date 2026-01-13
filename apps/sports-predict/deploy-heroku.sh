@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# NCAA Basketball Predictor - Heroku Container Deployment Script
+# Sports Predictor - Heroku Container Deployment Script
 #
 # This script:
 # 1. Runs the training pipeline (if needed) to generate model and data
@@ -19,12 +19,12 @@ set -e
 # Options:
 #   --skip-sync    Skip syncing data from Docker volume (use existing local data)
 #
-# If APP_NAME is not provided, it will use 'grep3-ncaab-predict' as default
+# If APP_NAME is not provided, it will use 'grep3-sports-predict' as default
 # or prompt you to create a new app.
 
 # Parse arguments
 SKIP_SYNC=false
-APP_NAME="grep3-ncaab-predict"
+APP_NAME="grep3-sports-predict"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -40,10 +40,10 @@ while [[ $# -gt 0 ]]; do
 done
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DATA_DIR="$PROJECT_DIR/data"
-IMAGE_NAME="ncaa-predict"
+IMAGE_NAME="sports-predict"
 
 echo "========================================"
-echo "NCAA Basketball Predictor"
+echo "Sports Predictor"
 echo "Heroku Container Deployment"
 echo "========================================"
 echo ""
@@ -86,14 +86,14 @@ sync_data_from_volume() {
     echo "Syncing data from Docker volume to local directory..."
 
     # Check if Docker volume exists
-    if ! docker volume inspect ncaa-predict-data &> /dev/null; then
-        echo "Warning: Docker volume 'ncaa-predict-data' not found."
+    if ! docker volume inspect sports-predict-data &> /dev/null; then
+        echo "Warning: Docker volume 'sports-predict-data' not found."
         echo "Skipping sync. Using existing local data if available."
         return 1
     fi
 
     # Check if a container is using the volume (get data from running container)
-    CONTAINER_NAME=$(docker ps --filter "volume=ncaa-predict-data" --format "{{.Names}}" | head -1)
+    CONTAINER_NAME=$(docker ps --filter "volume=sports-predict-data" --format "{{.Names}}" | head -1)
 
     if [ -n "$CONTAINER_NAME" ]; then
         echo "Found running container: $CONTAINER_NAME"
@@ -161,7 +161,7 @@ extract_data_from_volume() {
 
     # Use a temporary container to copy data from volume
     docker run --rm \
-        -v ncaa-predict-data:/source:ro \
+        -v sports-predict-data:/source:ro \
         -v "$DATA_DIR":/dest \
         alpine sh -c "cp -r /source/* /dest/ 2>/dev/null || true"
 

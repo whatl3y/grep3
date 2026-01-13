@@ -336,6 +336,123 @@ class ESPNScraper(BaseScraper):
             "neutral_site": competition.get("neutralSite", False),
         }
 
+    def _supplement_missing_teams(
+        self, team_stats: pd.DataFrame, games: pd.DataFrame
+    ) -> pd.DataFrame:
+        """Add missing teams that appear in games but not in team stats.
+
+        ESPN's teams API sometimes doesn't return all teams (e.g., Tennessee Volunteers
+        is often missing). This method extracts teams from games data and fetches
+        their stats individually.
+
+        Args:
+            team_stats: Existing team statistics DataFrame
+            games: Games DataFrame with team info
+
+        Returns:
+            Updated team_stats DataFrame with missing teams added
+        """
+        if team_stats.empty or games.empty:
+            return team_stats
+
+        # Get all team IDs that appear in games
+        game_team_ids = set()
+        game_team_names = {}
+
+        for _, game in games.iterrows():
+            home_id = game.get("home_team_id")
+            away_id = game.get("away_team_id")
+            if home_id:
+                game_team_ids.add(home_id)
+                if game.get("home_team_name"):
+                    game_team_names[home_id] = game["home_team_name"]
+            if away_id:
+                game_team_ids.add(away_id)
+                if game.get("away_team_name"):
+                    game_team_names[away_id] = game["away_team_name"]
+
+        # Find teams in games that aren't in team_stats
+        existing_team_ids = set(team_stats["team_id"].unique())
+        missing_team_ids = game_team_ids - existing_team_ids
+
+        if not missing_team_ids:
+            return team_stats
+
+        console.print(
+            f"[yellow]Found {len(missing_team_ids)} teams in games missing from teams API[/yellow]"
+        )
+
+        # For each missing team, create basic stats from games data
+        new_team_rows = []
+        for team_id in missing_team_ids:
+            team_name = game_team_names.get(team_id, team_id.upper())
+
+            # Get all games for this team by season
+            team_games = games[
+                (games["home_team_id"] == team_id) | (games["away_team_id"] == team_id)
+            ]
+
+            for season in team_games["season"].unique():
+                season_games = team_games[team_games["season"] == season]
+
+                # Calculate basic stats from games
+                wins = 0
+                losses = 0
+                total_pts = 0
+                total_pts_allowed = 0
+
+                for _, game in season_games.iterrows():
+                    if game["home_team_id"] == team_id:
+                        pts = game["home_score"]
+                        opp_pts = game["away_score"]
+                    else:
+                        pts = game["away_score"]
+                        opp_pts = game["home_score"]
+
+                    total_pts += pts
+                    total_pts_allowed += opp_pts
+                    if pts > opp_pts:
+                        wins += 1
+                    else:
+                        losses += 1
+
+                num_games = wins + losses
+                if num_games > 0:
+                    new_team_rows.append({
+                        "season": season,
+                        "team_id": team_id,
+                        "team_name": team_name,
+                        "espn_id": None,
+                        "wins": wins,
+                        "losses": losses,
+                        "games": num_games,
+                        "win_pct": wins / num_games,
+                        "pts_per_game": total_pts / num_games,
+                        "pts_allowed": total_pts_allowed / num_games,
+                        # Other stats will be None/NaN
+                        "pass_yds": None,
+                        "rush_yds": None,
+                        "total_yds": None,
+                        "turnovers": None,
+                        "takeaways": None,
+                        "third_down_pct": None,
+                        "red_zone_pct": None,
+                        "time_possession": None,
+                        "srs": None,
+                        "sos": None,
+                    })
+
+            console.print(f"  [dim]Added {team_name} ({team_id})[/dim]")
+
+        if new_team_rows:
+            new_teams_df = pd.DataFrame(new_team_rows)
+            team_stats = pd.concat([team_stats, new_teams_df], ignore_index=True)
+            console.print(
+                f"[green]Added {len(new_team_rows)} missing team-seasons from games data[/green]"
+            )
+
+        return team_stats
+
     def scrape_all_seasons(
         self, start_season: int, end_season: int, force_refresh: bool = False
     ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -418,6 +535,11 @@ class ESPNScraper(BaseScraper):
         games_df = (
             pd.concat(all_games, ignore_index=True) if all_games else pd.DataFrame()
         )
+
+        # Supplement missing teams from games data
+        # ESPN teams API sometimes misses teams that appear in games
+        if not games_df.empty and not team_stats_df.empty:
+            team_stats_df = self._supplement_missing_teams(team_stats_df, games_df)
 
         # Save combined data
         self._save_data(team_stats_df, games_df)
