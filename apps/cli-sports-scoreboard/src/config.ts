@@ -43,6 +43,12 @@ export const LEAGUES: Record<LeagueCode, LeagueConfig> = {
 
 export const VALID_LEAGUES = Object.keys(LEAGUES) as LeagueCode[];
 
+export const COLLEGE_LEAGUES: LeagueCode[] = ['ncaaf', 'ncaab'];
+
+export function isCollegeLeague(league: LeagueCode): boolean {
+  return COLLEGE_LEAGUES.includes(league);
+}
+
 export const ESPN_BASE_URL = 'https://site.api.espn.com/apis/site/v2/sports';
 
 export const DEFAULT_REFRESH_SECONDS = 30;

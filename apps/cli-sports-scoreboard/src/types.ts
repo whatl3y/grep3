@@ -33,6 +33,9 @@ export interface Competitor {
   score?: string;
   winner?: boolean;
   records?: Array<{ summary: string }>;
+  curatedRank?: {
+    current: number;
+  };
 }
 
 export interface GameStatus {
@@ -101,4 +104,6 @@ export interface ScoreboardRow {
   homeTeam: string;
   homeScore: string;
   detail: string;
+  awayRank?: number;
+  homeRank?: number;
 }

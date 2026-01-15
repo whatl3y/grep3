@@ -10,16 +10,16 @@ function padLeft(str: string, len: number): string {
 
 interface ColumnConfig {
   header: string;
-  key: keyof ScoreboardRow;
+  key: keyof ScoreboardRow | 'awayTeamDisplay' | 'homeTeamDisplay';
   width: number;
   align: 'left' | 'right';
 }
 
 const COLUMNS: ColumnConfig[] = [
   { header: 'Status', key: 'status', width: 10, align: 'left' },
-  { header: 'Away', key: 'awayTeam', width: 6, align: 'left' },
+  { header: 'Away', key: 'awayTeamDisplay', width: 10, align: 'left' },
   { header: 'Score', key: 'awayScore', width: 5, align: 'right' },
-  { header: 'Home', key: 'homeTeam', width: 6, align: 'left' },
+  { header: 'Home', key: 'homeTeamDisplay', width: 10, align: 'left' },
   { header: 'Score', key: 'homeScore', width: 5, align: 'right' },
   { header: 'Detail', key: 'detail', width: 18, align: 'left' },
 ];
@@ -45,6 +45,13 @@ function createRow(values: string[]): string {
   );
 }
 
+function formatTeamWithRank(team: string, rank?: number): string {
+  if (rank) {
+    return `(${rank}) ${team}`;
+  }
+  return team;
+}
+
 export function renderTable(rows: ScoreboardRow[]): string {
   const lines: string[] = [];
   const separator = createSeparator();
@@ -54,7 +61,15 @@ export function renderTable(rows: ScoreboardRow[]): string {
   lines.push(separator);
 
   for (const row of rows) {
-    const values = COLUMNS.map((col) => row[col.key]);
+    const values = COLUMNS.map((col) => {
+      if (col.key === 'awayTeamDisplay') {
+        return formatTeamWithRank(row.awayTeam, row.awayRank);
+      }
+      if (col.key === 'homeTeamDisplay') {
+        return formatTeamWithRank(row.homeTeam, row.homeRank);
+      }
+      return row[col.key as keyof ScoreboardRow] as string;
+    });
     lines.push(createRow(values));
   }
 

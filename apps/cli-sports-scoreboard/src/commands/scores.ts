@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import { fetchScoreboard } from '../api/espn';
-import { LEAGUES, VALID_LEAGUES, DEFAULT_REFRESH_SECONDS, MIN_REFRESH_SECONDS } from '../config';
+import { LEAGUES, VALID_LEAGUES, DEFAULT_REFRESH_SECONDS, MIN_REFRESH_SECONDS, isCollegeLeague } from '../config';
 import { LeagueCode, ScoreboardResponse, ScoreboardRow, CLIOptions } from '../types';
 import { renderTable, renderNoGames } from '../ui/table';
 import { clearScreen, showCursor, hideCursor } from '../ui/screen';
 
-function parseEvents(data: ScoreboardResponse): ScoreboardRow[] {
+function parseEvents(data: ScoreboardResponse, league: LeagueCode): ScoreboardRow[] {
   const rows: ScoreboardRow[] = [];
+  const showRankings = isCollegeLeague(league);
 
   for (const event of data.events) {
     const competition = event.competitions[0];
@@ -27,14 +28,27 @@ function parseEvents(data: ScoreboardResponse): ScoreboardRow[] {
       statusText = 'Final';
     }
 
-    rows.push({
+    const row: ScoreboardRow = {
       status: statusText,
       awayTeam: awayTeam.team.abbreviation,
       awayScore: awayTeam.score ?? '-',
       homeTeam: homeTeam.team.abbreviation,
       homeScore: homeTeam.score ?? '-',
       detail: status.type.shortDetail,
-    });
+    };
+
+    if (showRankings) {
+      const awayRank = awayTeam.curatedRank?.current;
+      const homeRank = homeTeam.curatedRank?.current;
+      if (awayRank && awayRank <= 25) {
+        row.awayRank = awayRank;
+      }
+      if (homeRank && homeRank <= 25) {
+        row.homeRank = homeRank;
+      }
+    }
+
+    rows.push(row);
   }
 
   return rows;
@@ -84,7 +98,7 @@ async function displayScoreboard(
 
   try {
     const data = await fetchScoreboard(league, date);
-    const rows = parseEvents(data);
+    const rows = parseEvents(data, league);
 
     if (isWatch) {
       clearScreen();
