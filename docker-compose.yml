@@ -367,6 +367,41 @@ services:
     volumes:
       - ./apps/twitter-bot/dist:/app/dist
 
+  about-me-server:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/about-me/server/Dockerfile
+    ports:
+      - "8020:8020"
+    env_file:
+      - ./apps/about-me/server/.env
+    environment:
+      - HOST=http://about-me-server:8020
+      - PORT=8020
+      # API keys - set these in your environment or .env file
+      # - TWITTER_BEARER_TOKEN=${TWITTER_BEARER_TOKEN}
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ./apps/about-me/server/dist:/app/dist
+
+  about-me-client:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/about-me/client/Dockerfile
+      args:
+        # Use localhost since browser needs to access the server from host machine
+        - VITE_API_URL=http://localhost:8020
+    depends_on:
+      - about-me-server
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000
+
 volumes:
   sports-predict-data:
     name: sports-predict-data

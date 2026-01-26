@@ -1,0 +1,45 @@
+# Docker Compose configuration for Oasis ROFL Trustless Agent
+#
+# LOCAL DEVELOPMENT:
+#   docker compose up
+#
+# ROFL DEPLOYMENT (includes ERC-8004 registration):
+#   docker compose --profile rofl up
+
+services:
+  # Main ElizaOS agent service
+  elizaos:
+    build: .
+    # IMPORTANT: For ROFL deployment, uncomment and set your Docker Hub username:
+    # image: docker.io/YOUR_DOCKER_USERNAME/oasis-trustless-agent:latest
+    platform: linux/amd64
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - EVM_PRIVATE_KEY=${EVM_PRIVATE_KEY:-}
+      - EVM_PROVIDER_URL=${EVM_PROVIDER_URL:-https://sapphire.oasis.io}
+    volumes:
+      - agent-data:/app/data
+    restart: unless-stopped
+
+  # ERC-8004 registration service for trustless verification
+  # Only needed for ROFL TEE deployment, not local development
+  rofl-8004:
+    image: ghcr.io/oasisprotocol/rofl-8004@sha256:f57373103814a0ca4c0a03608284451221b026e695b0b8ce9ca3d4153819a349
+    platform: linux/amd64
+    environment:
+      - RPC_URL=${RPC_URL}
+      - PINATA_JWT=${PINATA_JWT}
+    volumes:
+      - /run/rofl-appd.sock:/run/rofl-appd.sock
+    depends_on:
+      - elizaos
+    restart: unless-stopped
+    profiles:
+      - rofl
+
+volumes:
+  agent-data:
+    driver: local

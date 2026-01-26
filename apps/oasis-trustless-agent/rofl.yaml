@@ -1,0 +1,49 @@
+# Oasis ROFL Application Manifest
+# This configuration defines the trustless agent for TEE deployment
+
+# Application metadata
+name: oasis-trustless-agent
+version: 0.1.0
+
+# Trusted Execution Environment configuration
+tee: tdx
+kind: container
+
+# Resource requirements for TEE instance
+# These are minimum requirements for running ElizaOS with PGLite
+resources:
+  memory: 2048      # 2GB RAM minimum
+  cpus: 1           # 1 vCPU
+  storage:
+    kind: disk-persistent
+    size: 10000     # 10GB persistent storage for agent data
+
+# Network configuration
+# The app ID will be populated after running `oasis rofl create`
+# app_id: rofl1qqn9xndja7e2pnxhttktmecvwzz0yqwxsquqyxdf
+
+# Policy configuration
+# Defines who can administer the app and update its configuration
+policy:
+  # Admin can update the app configuration
+  # Will be set to your account address after creation
+  admin: ""
+
+  # Allowed endorsers for the app (empty = any)
+  endorsers: []
+
+# Secrets configuration
+# These are end-to-end encrypted and only accessible within the TEE
+# Set secrets using: echo -n "value" | oasis rofl secret set KEY -
+secrets:
+  - OPENAI_API_KEY
+  - RPC_URL
+  - PINATA_JWT
+
+# Deployment configuration
+deployment:
+  # Default network for deployment
+  network: testnet
+
+  # Bundle output path
+  bundle: oasis-trustless-agent.default.orc
