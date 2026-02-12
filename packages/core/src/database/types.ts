@@ -18,6 +18,12 @@ export interface Database {
   twitter_bot_voice_profiles: TwitterBotVoiceProfileTable;
   twitter_bot_generated_tweets: TwitterBotGeneratedTweetTable;
   twitter_bot_posting_schedules: TwitterBotPostingScheduleTable;
+  // EVM Arbitrage Bot tables
+  evm_arbitrage_whitelisted_tokens: EvmArbitrageWhitelistedTokenTable;
+  evm_arbitrage_pools: EvmArbitragePoolTable;
+  evm_arbitrage_executions: EvmArbitrageExecutionTable;
+  evm_arbitrage_opportunities: EvmArbitrageOpportunityTable;
+  evm_arbitrage_config: EvmArbitrageConfigTable;
 }
 
 export interface RepoTable {
@@ -250,3 +256,154 @@ export type TwitterBotGeneratedTweetUpdate = Updateable<TwitterBotGeneratedTweet
 export type TwitterBotPostingSchedule = Selectable<TwitterBotPostingScheduleTable>;
 export type NewTwitterBotPostingSchedule = Insertable<TwitterBotPostingScheduleTable>;
 export type TwitterBotPostingScheduleUpdate = Updateable<TwitterBotPostingScheduleTable>;
+
+// =============================================================================
+// EVM Arbitrage Bot Types
+// =============================================================================
+
+// ---- Whitelisted Tokens ----
+
+export interface EvmArbitrageWhitelistedTokenTable {
+  id: Generated<number>;
+  chain_id: number;
+  token_address: string;
+  symbol: string;
+  decimals: number;
+  is_active: ColumnType<boolean, boolean | undefined, boolean>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export type EvmArbitrageWhitelistedToken =
+  Selectable<EvmArbitrageWhitelistedTokenTable>;
+export type NewEvmArbitrageWhitelistedToken =
+  Insertable<EvmArbitrageWhitelistedTokenTable>;
+export type EvmArbitrageWhitelistedTokenUpdate =
+  Updateable<EvmArbitrageWhitelistedTokenTable>;
+
+// ---- Pools ----
+
+export interface EvmArbitragePoolExtraConfig {
+  /** For Curve pools: array of coin addresses */
+  coins?: string[];
+  /** For Balancer pools: pool ID */
+  poolId?: string;
+  /** For Balancer pools: vault address */
+  vault?: string;
+  /** Tick spacing for V3 pools */
+  tickSpacing?: number;
+  /** Factory address that deployed this pool */
+  factory?: string;
+  /** Any additional DEX-specific configuration */
+  [key: string]: unknown;
+}
+
+export interface EvmArbitragePoolTable {
+  id: Generated<number>;
+  chain_id: number;
+  dex_type: string;
+  pool_address: string;
+  token0_address: string;
+  token1_address: string;
+  fee_tier: number | null;
+  is_stable: boolean | null;
+  extra_config: ColumnType<
+    EvmArbitragePoolExtraConfig | null,
+    string | undefined,
+    string | undefined
+  >;
+  last_synced_at: ColumnType<
+    Date | null,
+    string | undefined,
+    string | undefined
+  >;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type EvmArbitragePool = Selectable<EvmArbitragePoolTable>;
+export type NewEvmArbitragePool = Insertable<EvmArbitragePoolTable>;
+export type EvmArbitragePoolUpdate = Updateable<EvmArbitragePoolTable>;
+
+// ---- Executions ----
+
+export type EvmArbitrageExecutionStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "reverted";
+
+export interface EvmArbitragePathStep {
+  pool_address: string;
+  dex_type: string;
+  token_in: string;
+  token_out: string;
+  fee_tier?: number;
+}
+
+export interface EvmArbitrageExecutionTable {
+  id: Generated<number>;
+  chain_id: number;
+  tx_hash: string;
+  input_token: string;
+  output_token: string;
+  input_amount: string;
+  output_amount: string;
+  profit_amount: string;
+  gas_used: string | null;
+  gas_price: string | null;
+  tx_cost: string | null;
+  net_profit: string | null;
+  status: ColumnType<EvmArbitrageExecutionStatus, string, string>;
+  path: ColumnType<EvmArbitragePathStep[], string, string>;
+  executed_at: ColumnType<Date, string, never>;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type EvmArbitrageExecution = Selectable<EvmArbitrageExecutionTable>;
+export type NewEvmArbitrageExecution = Insertable<EvmArbitrageExecutionTable>;
+export type EvmArbitrageExecutionUpdate = Updateable<EvmArbitrageExecutionTable>;
+
+// ---- Opportunities ----
+
+export interface EvmArbitrageOpportunityPath {
+  steps: EvmArbitragePathStep[];
+  input_token: string;
+  output_token: string;
+}
+
+export interface EvmArbitrageOpportunityTable {
+  id: Generated<number>;
+  chain_id: number;
+  path: ColumnType<EvmArbitrageOpportunityPath, string, string>;
+  input_amount: string;
+  expected_output: string;
+  expected_profit_usd: ColumnType<
+    number | null,
+    string | undefined,
+    string | undefined
+  >;
+  was_executed: ColumnType<boolean, boolean | undefined, boolean>;
+  execution_id: number | null;
+  found_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type EvmArbitrageOpportunity = Selectable<EvmArbitrageOpportunityTable>;
+export type NewEvmArbitrageOpportunity =
+  Insertable<EvmArbitrageOpportunityTable>;
+export type EvmArbitrageOpportunityUpdate =
+  Updateable<EvmArbitrageOpportunityTable>;
+
+// ---- Config ----
+
+export interface EvmArbitrageConfigTable {
+  id: Generated<number>;
+  chain_id: number;
+  config_key: string;
+  config_value: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string>;
+}
+
+export type EvmArbitrageConfig = Selectable<EvmArbitrageConfigTable>;
+export type NewEvmArbitrageConfig = Insertable<EvmArbitrageConfigTable>;
+export type EvmArbitrageConfigUpdate = Updateable<EvmArbitrageConfigTable>;

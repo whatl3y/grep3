@@ -21,6 +21,11 @@ export * from "./database/models/cryptoDailySummaries";
 export * from "./database/models/twitterBotVoiceProfiles";
 export * from "./database/models/twitterBotGeneratedTweets";
 export * from "./database/models/twitterBotPostingSchedules";
+export * from "./database/models/evmArbitrageWhitelistedTokens";
+export * from "./database/models/evmArbitragePools";
+export * from "./database/models/evmArbitrageExecutions";
+export * from "./database/models/evmArbitrageOpportunities";
+export * from "./database/models/evmArbitrageConfig";
 
 // Redis
 export { createRedisClient, getRedisOptions } from "./redis";

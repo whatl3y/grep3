@@ -402,6 +402,33 @@ services:
     environment:
       - PORT=3000
 
+  evm-arbitrage:
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/evm-arbitrage/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/evm-arbitrage/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:grep3@postgres:5432/grep3
+      - REDIS_URL=redis://redis:6379
+      - WAIT_HOSTS=postgres:5432,redis:6379
+      # RPC URLs - set these in your environment or .env file
+      # - ETH_RPC_URL=${ETH_RPC_URL}
+      # - ARBITRUM_RPC_URL=${ARBITRUM_RPC_URL}
+      # - BASE_RPC_URL=${BASE_RPC_URL}
+      # - BSC_RPC_URL=${BSC_RPC_URL}
+      # - POLYGON_RPC_URL=${POLYGON_RPC_URL}
+      # - OPTIMISM_RPC_URL=${OPTIMISM_RPC_URL}
+      # - AVALANCHE_RPC_URL=${AVALANCHE_RPC_URL}
+      # Execution config
+      # - PRIVATE_KEY=${PRIVATE_KEY}
+    volumes:
+      - ./apps/evm-arbitrage/dist:/usr/grep3/apps/evm-arbitrage/dist
+
 volumes:
   sports-predict-data:
     name: sports-predict-data
