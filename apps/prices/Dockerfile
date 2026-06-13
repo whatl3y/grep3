@@ -2,8 +2,9 @@ FROM node:22 AS builder
 
 LABEL AUTHOR="Lance Whatley"
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm (pinned to the version in the repo's packageManager field so
+# the build is reproducible and pnpm behavior changes don't land silently)
+RUN npm install -g pnpm@10.28.1
 
 # specify working directory
 WORKDIR /usr/grep3
@@ -29,8 +30,11 @@ COPY apps/prices/ ./apps/prices/
 RUN pnpm --filter=@grep3/core build
 RUN pnpm --filter=@grep3/prices build
 
-# Deploy to a standalone directory with all dependencies
-RUN pnpm --filter=@grep3/prices deploy --prod /app
+# Deploy to a standalone directory with all dependencies.
+# --legacy: pnpm v10 refuses to deploy non-injected workspaces by default
+# (ERR_PNPM_DEPLOY_NONINJECTED_WORKSPACE); --legacy restores the pre-v10
+# symlink-based deploy this image relies on.
+RUN pnpm --filter=@grep3/prices deploy --prod --legacy /app
 
 # Production stage
 FROM node:22-slim
